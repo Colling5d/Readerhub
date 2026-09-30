@@ -8,8 +8,9 @@
   :root{--bg:#faf8f4;--card:#fff;--ink:#2b2b2b;--mute:#7a766c;--accent:#8a4422;--line:#e6e1d6}
   *{box-sizing:border-box}
   body{margin:0;font-family:"Source Serif Pro",Georgia,"Songti SC","Noto Serif CJK SC",serif;background:var(--bg);color:var(--ink)}
-  header{padding:28px 24px 8px;text-align:left;max-width:980px;margin:0 auto}
-  header .brand{font-size:16px;letter-spacing:2px;color:var(--accent);font-weight:bold;border-bottom:2px solid var(--accent);display:inline-block;padding-bottom:6px}
+  header{padding:40px 24px 12px;text-align:center;background:linear-gradient(180deg,#fff,var(--bg))}
+  header h1{margin:0 0 6px;font-size:28px;letter-spacing:1px}
+  header p{margin:0;color:var(--mute);font-size:14px}
   .wrap{max-width:980px;margin:0 auto;padding:8px 20px 60px}
   .count{font-size:13px;color:var(--mute);margin:8px 2px 16px}
   #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
@@ -21,14 +22,14 @@
   .card .meta{margin-top:12px;font-size:12px;color:var(--mute);display:flex;gap:8px;flex-wrap:wrap}
   .tag{background:#f1ece2;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:11px}
   .tag.lang{background:#8a4422;border-color:#8a4422;color:#fff}
-  .tag.lang{background:#8a4422;border-color:#8a4422;color:#fff}
   .empty{color:var(--mute);text-align:center;padding:60px 0;font-size:15px}
   footer{text-align:center;color:var(--mute);font-size:12px;padding:20px}
 </style>
 </head>
 <body>
 <header>
-  <div class="brand">READERHUB</div>
+  <h1>ReaderHub · 在线阅读馆</h1>
+  <p>我的电子书库 —— 每本书一个独立页面，点击卡片进入阅读。</p>
 </header>
 <div class="wrap">
   <div class="count" id="count"></div>
