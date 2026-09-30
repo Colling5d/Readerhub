@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ReaderHub · 双语在线阅读馆</title>
+<style>
+  :root{--bg:#faf8f4;--card:#fff;--ink:#2b2b2b;--mute:#7a766c;--accent:#8a4422;--line:#e6e1d6}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:"Source Serif Pro",Georgia,"Songti SC","Noto Serif CJK SC",serif;background:var(--bg);color:var(--ink)}
+  header{padding:44px 24px 20px;text-align:center;background:linear-gradient(180deg,#fff,var(--bg))}
+  header h1{margin:0 0 6px;font-size:30px;letter-spacing:1px}
+  header p{margin:0;color:var(--mute);font-size:14px}
+  .wrap{max-width:980px;margin:0 auto;padding:16px 20px 60px}
+  .count{font-size:13px;color:var(--mute);margin:8px 2px 16px}
+  #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;text-decoration:none;color:inherit;display:block;transition:transform .12s ease,box-shadow .12s ease}
+  .card:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.08)}
+  .card h2{margin:0 0 4px;font-size:20px}
+  .card .author{font-size:13px;color:var(--accent);font-style:italic;margin-bottom:8px}
+  .card .desc{font-size:13.5px;color:var(--mute);line-height:1.6;margin:0}
+  .card .meta{margin-top:12px;font-size:12px;color:var(--mute);display:flex;gap:8px;flex-wrap:wrap}
+  .tag{background:#f1ece2;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:11px}
+  .empty{color:var(--mute);text-align:center;padding:60px 0;font-size:15px}
+  footer{text-align:center;color:var(--mute);font-size:12px;padding:20px}
+</style>
+</head>
+<body>
+<header>
+  <h1>ReaderHub · 双语在线阅读馆</h1>
+  <p>中英对照网页阅读器合集 —— 每本书一个独立页面，点击卡片进入阅读。</p>
+</header>
+<div class="wrap">
+  <div class="count" id="count"></div>
+  <div id="grid"></div>
+</div>
+<footer>由 books/ 目录下的 metadata.json 自动生成 · <a id="githubLink" href="#" style="color:var(--accent)">仓库</a></footer>
+
+<script>
+// ---- 从 books/*/metadata.json 自动生成书籍卡片 ----
+var BOOKS = [
+  {
+    "id": "cultures-colliding",
+    "title": "Cultures Colliding",
+    "subtitle": "American Missionaries, Chinese Resistance, and the Rise of Modern Institutions in China",
+    "author": "John R. Haddad",
+    "description": "《文化碰撞：美国传教士、中国抵抗与现代制度在中国的兴起》—— 中英对照双语在线阅读。全书含前言、导论、十二章正文章节及结论。",
+    "tags": ["history", "china", "missions", "bilingual", "中英对照"],
+    "featured": true,
+    "lang": "en-zh",
+    "chapterCount": 17,
+    "updated": "2024-09-30"
+  },
+  /* __BOOKS__ */
+];
+
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+
+var grid = document.getElementById('grid');
+if(!BOOKS || !BOOKS.length){
+  grid.innerHTML = '<div class="empty">书库为空。<br>把阅读器放进 <b>books/&lt;book-id&gt;/index.html</b> 并添加 metadata.json 即可显示。</div>';
+}else{
+  // optional featured ordering
+  BOOKS.sort(function(a,b){return (b.featured?1:0)-(a.featured?1:0)});
+  grid.innerHTML = BOOKS.map(function(b){
+    var tags = (b.tags||[]).map(function(t){return '<span class="tag">'+esc(t)+'</span>'}).join('');
+    return '<a class="card" href="books/'+encodeURIComponent(b.id)+'/" >'+
+      '<h2>'+esc(b.title)+'</h2>'+
+      (b.author?'<div class="author">'+esc(b.author)+'</div>':'')+
+      (b.description?'<p class="desc">'+esc(b.description)+'</p>':'')+
+      '<div class="meta">'+tags+'</div></a>';
+  }).join('');
+}
+document.getElementById('count').textContent = '共 ' + BOOKS.length + ' 本';
+document.getElementById('githubLink').href = 'https://github.com' + (location.pathname.replace(/^\/?([^\/]+)\/([^\/]+)\/.*$/, '/$1/$2'));
+</script>
+</body>
+</html>
