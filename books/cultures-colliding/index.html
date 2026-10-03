@@ -141,53 +141,42 @@
     .col-head{padding:14px 28px}
   }
   @media (max-width:900px){
-    /* ---- 单栏阅读 + 顶部吸顶导航 + 抽屉目录 ---- */
+    /* ---- 手机上保持 中英左右两栏对照 ---------------- */
     html,body{height:100%;overscroll-behavior:none}
     html{-webkit-text-size-adjust:100%}
+    html,body{margin:0}
     .app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
     body{background:var(--bg)}
 
-    .soverlay{display:none}
+    /* 侧边栏：顶部紧凑（宽度方向不占正文） */
+    .sidebar{position:relative;transform:none;width:100%;flex:none;max-height:44vh;min-height:0;
+             border-right:none;border-bottom:1px solid var(--line);overflow-y:auto;
+             box-shadow:none}
+    .sidebar .brand{padding:8px 12px}
+    .sidebar .brand h1{font-size:16px}
+    .sidebar .brand p{font-size:11px}
+    .toc{padding:4px 0 12px}
+    .toc-item{padding:5px 12px;font-size:13px}
+    .search-box{padding:8px 12px}
+    .search-results{max-height:150px}
 
-    .mnav{flex:none;height:50px;z-index:9999;
-          display:flex;align-items:center;justify-content:space-between;gap:6px;
-          background:var(--accent);color:#fff;padding:0 8px;box-shadow:0 2px 8px rgba(0,0,0,.22)}
-    .mnav-btn{flex:none;background:none;border:1px solid rgba(255,255,255,.45);color:#fff;
-              font-size:17px;width:36px;height:36px;border-radius:7px;cursor:pointer;line-height:1}
-    .mnav-title{flex:1;min-width:0;text-align:center;font-weight:600;font-size:13px;
-                overflow:hidden;text-overflow:ellipsis;white-space:nowrap;padding:0 4px}
-    .mnav-switch{flex:none;display:flex;gap:4px}
-    .mnav-switch .mswitch{background:none;border:1px solid rgba(255,255,255,.45);color:#fff;
-              border-radius:7px;padding:5px 9px;font-size:12px;cursor:pointer;font-family:inherit;line-height:1.2}
-    .mnav-switch .mswitch.active{background:#fff;color:var(--accent);font-weight:700}
-
-    /* 侧边栏 → 全屏抽屉 */
-    .sidebar{position:fixed;top:0;left:0;bottom:0;width:84%;max-width:330px;z-index:10001;
-             transform:translateX(-102%);transition:transform .24s ease;
-             box-shadow:4px 0 24px rgba(0,0,0,.3)}
-    .sidebar.m-open{transform:translateX(0)}
-    .soverlay{position:fixed;inset:0;background:rgba(0,0,0,.48);z-index:10000}
-    .soverlay.on{display:block}
-
-    .main{flex:1;display:block;position:relative;overflow:hidden;min-height:0}
-    .col{position:absolute;inset:0;width:100%;height:100%;overflow-y:auto;
-         -webkit-overflow-scrolling:touch;padding:16px 18px 100px;border:none!important}
-    .col.en{display:block;border-right:none}
-    .col.zh{display:none}
-    .col.m-hidden{display:none}
-    .col.m-show{display:block}
+    /* 主体：左右两栏，各占一半，自有滚动 */
+    .main{flex:1;display:flex;min-height:0;overflow:hidden}
+    .col{flex:1 1 0;min-width:0;width:auto;height:auto;position:static;
+         overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 10px 90px}
+    .col.en{border-right:1px solid var(--line)}
+    .col-head{position:static;font-size:12px;padding:8px 10px}
+    .col .p{font-size:13.5px;line-height:1.6;text-align:justify;margin:0 0 .55em;hyphens:auto}
+    .col.en .p{font-size:12.5px;line-height:1.55}
+    .chapter-title{font-size:19px;margin:16px 0 3px}
+    .chapter-sub{font-size:12px;margin-bottom:12px;line-height:1.4}
     .article{max-width:100%}
-    .col-head{display:none}   /* 手机用顶部导航代替 */
-    .col .p{font-size:16.5px;line-height:1.85;text-align:left}
-    .col.en .p{font-size:16px}
-    .chapter-title{font-size:22px;margin:22px 0 4px}
-    .chapter-sub{font-size:14px;margin-bottom:16px}
 
     /* 笔记面板 / 工具栏 小屏适配 */
-    #note-panel{left:10px;right:10px;width:auto;top:auto;bottom:14px;max-height:62vh}
+    #note-panel{left:10px;right:10px;width:auto;top:auto;bottom:12px;max-height:60vh}
     #note-toolbar{max-width:97vw;flex-wrap:wrap}
-    #note-toast{bottom:18px}
-    .makenote{bottom:16px;right:16px}
+    #note-toast{bottom:16px}
+    .makenote{bottom:14px;right:14px}
   }
 
   /* ===== 笔记：画线/高亮 ===== */
@@ -223,23 +212,10 @@
 </style>
 </head>
 <body>
-
-  <div class="soverlay" id="soverlay"></div>
-
 <div class="app">
 
-  <!-- ===== 移动端：顶部吸顶导航栏 ===== -->
-  <nav class="mnav" id="mnav">
-    <button class="mnav-btn" id="mnav-menu" aria-label="目录">☰</button>
-    <div class="mnav-title" id="mnav-title">目录</div>
-    <div class="mnav-switch" id="mnav-switch">
-      <button class="mswitch active" data-m="en">EN</button>
-      <button class="mswitch" data-m="zh">中文</button>
-    </div>
-  </nav>
-
   <!-- ======= SIDEBAR / TOC ======= -->
-  <aside class="sidebar" id="sidebar">
+  <aside class="sidebar">
     <div class="brand">
       <h1>Cultures Colliding</h1>
       <p>中英对照版 · Bilingual Edition
@@ -949,13 +925,9 @@ function applySentenceSel(){
       if(tr.length){
         PEER={lang:peerLang, i:i, ranges:tr};
         renderMarks(peerPara);           // 在另一栏画出对应句高亮
-        if(MOBILE){                     // 手机单栏：不自动滚隐藏栏，等用户切过去再看
-          if(peerLang===mLang) gotoPeer(peerPara);
-        } else {
-          scrollToPara(peerLang, i);    // 台式：滚动对侧栏到对应句所在段
-          var pm=peerPara.querySelector('.peer-sent');
-          if(pm){ try{ pm.scrollIntoView({block:'center'}); }catch(e){} }
-        }
+        scrollToPara(peerLang, i);       // 滚动对侧栏到对应句所在段
+        var pm=peerPara.querySelector('.peer-sent');
+        if(pm){ try{ pm.scrollIntoView({block:'center'}); }catch(e){} }
       }
       return;
     }
@@ -994,7 +966,6 @@ var __origGoTo = goTo;
 goTo = function(){
   __origGoTo.apply(null, arguments);
   renderAllMarks();
-  if(typeof updateMnavTitle==='function') updateMnavTitle();  // 移动端顶部标题
 };
 
 /* ============ 记忆阅读位置：自动回到上次结束的地方 ============ */
@@ -1039,111 +1010,6 @@ function onPosNow(){ clearTimeout(window.__posT); window.__posT = setTimeout(wri
     });
   }
 })();
-
-
-/* ================= 移动端：单栏切换阅读 + 抽屉目录 + 句子联动 ================= */
-var MOBILE = false;   // 手机模式(<=900px)
-var mLang = 'en';     // 手机当前显示语言
-
-// 把对侧栏对准某段，并把其中的对应句滚动居中
-function gotoPeer(para){
-  var pi = +(para.getAttribute('data-i'));
-  var L = para.getAttribute('data-lang');
-  var pair = colPair(L);
-  var top = paraScrollTop(pair, pi);
-  if(top!==null) pair.scroll.scrollTop = Math.max(0, top-6);
-  var pm = para.querySelector('.peer-sent');
-  if(pm){ try{ pm.scrollIntoView({block:'center'}); }catch(e){} }
-}
-
-// 当前栏顶部第一个可见段落的 data-i
-function currentTopIdx(pair){
-  var els = pair.content.querySelectorAll('[data-i]');
-  if(!els.length) return 0;
-  var sRect = pair.scroll.getBoundingClientRect();
-  var sy = sRect.top + 8;
-  var last = +els[els.length-1].getAttribute('data-i');
-  for(var k=0;k<els.length;k++){
-    var pr = els[k].getBoundingClientRect();
-    if(pr.bottom >= sy && pr.top <= sRect.bottom) return +els[k].getAttribute('data-i');
-  }
-  return last;
-}
-
-function switchLang(lang){
-  if(lang===mLang || (lang!=='en' && lang!=='zh')) return;
-  var srcId = (mLang==='en'?'scroll-en':'scroll-zh');
-  var dstId = (lang==='en'?'scroll-en':'scroll-zh');
-  document.getElementById(srcId).classList.remove('m-show');
-  document.getElementById(srcId).classList.add('m-hidden');
-  document.getElementById(dstId).classList.remove('m-hidden');
-  document.getElementById(dstId).classList.add('m-show');
-  // 对齐：把新栏滚到与原栏顶部段落相同的 data-i
-  var sameI = currentTopIdx(colPair(mLang));
-  var dstPair = colPair(lang);
-  var tt = paraScrollTop(dstPair, sameI);
-  if(tt!==null) document.getElementById(dstId).scrollTop = Math.max(0, tt);
-  // 若有对侧句子高亮，滚到该句
-  if(PEER && PEER.lang===lang){
-    var pp = articleFor(lang).querySelector('[data-i="'+PEER.i+'"]');
-    if(pp){ gotoPeer(pp); }
-    else { var t2 = paraScrollTop(dstPair, PEER.i); if(t2!==null) document.getElementById(dstId).scrollTop=Math.max(0,t2); }
-  }
-  document.querySelectorAll('.mswitch').forEach(function(b){
-    b.classList.toggle('active', b.getAttribute('data-m')===lang);
-  });
-  mLang = lang;
-}
-
-function openDrawer(){ document.getElementById('sidebar').classList.add('m-open'); document.getElementById('soverlay').classList.add('on'); }
-function closeDrawer(){ document.getElementById('sidebar').classList.remove('m-open'); document.getElementById('soverlay').classList.remove('on'); }
-
-function updateMnavTitle(){
-  var t = document.getElementById('mnav-title');
-  if(!t || !current) return;
-  var s = EN.find(function(x){ return x.id===current; });
-  var lab = s ? tocLabel(s) : null;
-  var txt = lab ? (lab[1]||lab[0]||(s&&s.title)||'') : labelOf(current);
-  t.textContent = txt || '目录';
-}
-
-function initM(){
-  document.getElementById('mnav-menu').onclick = function(ev){ ev.stopPropagation(); openDrawer(); };
-  document.getElementById('soverlay').onclick = closeDrawer;
-  document.querySelectorAll('.mswitch').forEach(function(b){
-    b.onclick = function(){ switchLang(b.getAttribute('data-m')); };
-  });
-  var toc = document.getElementById('toc');
-  toc.addEventListener('click', function(e){ if(e.target.closest('.toc-item')) closeDrawer(); });
-}
-
-function applyM(flag){
-  MOBILE = flag;
-  var mnav = document.getElementById('mnav');
-  var e = document.getElementById('scroll-en');
-  var z = document.getElementById('scroll-zh');
-  if(flag){
-    mnav.style.display='flex';
-    if(!window.__mInit){ window.__mInit=true; initM(); }
-    // 重置为 en 显示（CSS 默认 en block / zh 隐藏）
-    e.classList.remove('m-hidden'); e.classList.remove('m-show');
-    z.classList.add('m-hidden'); z.classList.remove('m-show');
-    mLang = 'en';
-    updateMnavTitle();
-  } else {
-    mnav.style.display='none';
-    closeDrawer();
-    e.classList.remove('m-show','m-hidden');
-    z.classList.remove('m-show','m-hidden');
-    mLang = 'en';
-  }
-}
-var mqM = window.matchMedia && window.matchMedia('(max-width:900px)');
-if(mqM){
-  if(mqM.addEventListener) mqM.addEventListener('change', function(e){ applyM(e.matches); });
-  else if(mqM.addListener) mqM.addListener(function(e){ applyM(e.matches); });
-  applyM(mqM.matches);
-} else { MOBILE=false; }
 </script>
 </body>
 </html>
