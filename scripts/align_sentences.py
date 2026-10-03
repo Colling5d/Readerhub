@@ -11,7 +11,7 @@ import json, re, sys, time, os, urllib.request
 PROXY = os.environ.get("API_PROXY", "http://127.0.0.1:7890")
 BASE = os.environ.get("LLM_BASE_URL")
 API_KEY = os.environ.get("LLM_API_KEY")
-MODEL = os.environ.get("LLM_MODEL", "current-model")
+MODEL = os.environ.get("LLM_MODEL", "default")
 if not API_KEY or not BASE:
     raise SystemExit("请设置环境变量 LLM_API_KEY 与 LLM_BASE_URL")
 
