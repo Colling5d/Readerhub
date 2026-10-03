@@ -2,10 +2,12 @@
 # -*- coding: utf-8 -*-
 """并行版句子对齐：多线程调用 API（并发<=3），断点续跑，进度写入 JSON。"""
 import json, re, time, os, threading, urllib.request
-PROXY="http://127.0.0.1:7890"
-BASE="LLM_BASE_URL"
-API_KEY="LLM_API_KEY"
-MODEL="current-model"
+PROXY=os.environ.get("API_PROXY","http://127.0.0.1:7890")
+BASE=os.environ.get("LLM_BASE_URL")
+API_KEY=os.environ.get("LLM_API_KEY")
+MODEL=os.environ.get("LLM_MODEL","current-model")
+if not API_KEY or not BASE:
+    raise SystemExit("请设置环境变量 LLM_API_KEY 与 LLM_BASE_URL")
 BOOK_DIR="/Users/zhulv/ReaderHub/books/cultures-colliding"
 HTML=os.path.join(BOOK_DIR,"index.html")
 OUT=os.path.join(BOOK_DIR,"aligned_sentences.json")

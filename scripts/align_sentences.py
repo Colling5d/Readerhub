@@ -1,16 +1,19 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-中英句子切分 + 一一对应对齐（调用某某模型 ChatLLM 大模型 API）
+中英句子切分 + 一一对应对齐（调用大模型 API）
 读取 e-book HTML 里的 EN/ZH JSON 数据 → 分批调用 API → 生成 {sec_id,para} -> 句子对齐
 结果保存到 ../books/<book>/aligned_sentences.json（可断点续跑）
+密钥从环境变量读取，勿硬编码。
 """
 import json, re, sys, time, os, urllib.request
 
-PROXY = "http://127.0.0.1:7890"
-BASE = "LLM_BASE_URL"
-API_KEY = "LLM_API_KEY"
-MODEL = "current-model"
+PROXY = os.environ.get("API_PROXY", "http://127.0.0.1:7890")
+BASE = os.environ.get("LLM_BASE_URL")
+API_KEY = os.environ.get("LLM_API_KEY")
+MODEL = os.environ.get("LLM_MODEL", "current-model")
+if not API_KEY or not BASE:
+    raise SystemExit("请设置环境变量 LLM_API_KEY 与 LLM_BASE_URL")
 
 BOOK_DIR = "/Users/zhulv/ReaderHub/books/cultures-colliding"
 HTML = os.path.join(BOOK_DIR, "index.html")
