@@ -160,7 +160,9 @@
     /* 主体：左右两栏，各占一半，自有滚动 */
     .main{flex:1;display:flex;min-height:0;overflow:hidden}
     .col{flex:1 1 0;min-width:0;width:auto;height:auto;position:static;
-         overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 10px 90px}
+         overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 10px 90px;
+         -webkit-user-select:text;-webkit-touch-callout:none}
+    .col .p{-webkit-user-select:text;user-select:text}
     .col.en{border-right:1px solid var(--line)}
     .col-head{position:static;font-size:12px;padding:8px 10px}
     .col .p{font-size:13.5px;line-height:1.6;text-align:justify;margin:0 0 .55em;hyphens:auto}
@@ -939,9 +941,25 @@ function applySentenceSel(){
   var open=document.getElementById('note-open');
   open.onclick=function(){ togglePanel(); };
 
-  document.addEventListener('mouseup', function(){
-    setTimeout(moveNoteToolbar, 20);
-    setTimeout(applySentenceSel, 30);       // 自动句子高亮 + 跨语言对应
+  function onPickLang(){
+    setTimeout(moveNoteToolbar, 30);
+    setTimeout(applySentenceSel, 60);       // 自动句子高亮 + 跨语言对应（延迟保证选择已完成）
+  }
+  document.addEventListener('mouseup', onPickLang, false);
+  // 移动端：触摸抬起后同样触发句子对应（iOS/安卓拖选文字不总抛 mouseup）
+  document.addEventListener('touchend', function(e){
+    if(!e.target || !e.target.closest) return;
+    if(e.target.closest('#note-toolbar,#note-panel,.makenote,.nt,#soverlay')) return;  // 忽略工具按钮点击
+    clearTimeout(window.__pickT);
+    window.__pickT = setTimeout(onPickLang, 120);   // 让系统完成文本选择后再读
+  }, {passive:true});
+  // 兜底：选择变化且稳定后也触发（覆盖 iOS 长按拖选等极端情况）
+  document.addEventListener('selectionchange', function(){
+    clearTimeout(window.__slT);
+    window.__slT = setTimeout(function(){
+      var s=window.getSelection();
+      if(s && !s.isCollapsed) onPickLang();
+    }, 450);
   }, false);
   document.addEventListener('keydown', function(e){           // Esc 收起 + 清除临时高亮
     if(e.key==='Escape'){ hideToolbar(); clearTempHL(); }
