@@ -30,7 +30,7 @@
   .app{display:flex;height:100vh;overflow:hidden}
 
   /* 移动端顶部导航 / 抽屉遮罩：桌面默认隐藏 */
-  .mnav,.mnav-spacer,.soverlay{display:none}
+  .mnav,.soverlay{display:none}
 
   /* ===== Sidebar ===== */
   .sidebar{
@@ -143,14 +143,13 @@
   @media (max-width:900px){
     /* ---- 单栏阅读 + 顶部吸顶导航 + 抽屉目录 ---- */
     html,body{height:100%;overscroll-behavior:none}
-    .app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+    html{-webkit-text-size-adjust:100%}
+    .app{display:flex;flex-direction:column;height:100vh;height:100dvh;overflow:hidden}
+    body{background:var(--bg)}
 
-    /* 桌面/移动默认隐藏移动导航 */
-    .mnav{display:none}
-    .mnav-spacer{display:none}
     .soverlay{display:none}
 
-    .mnav{position:fixed;top:0;left:0;right:0;height:50px;z-index:9999;
+    .mnav{flex:none;height:50px;z-index:9999;
           display:flex;align-items:center;justify-content:space-between;gap:6px;
           background:var(--accent);color:#fff;padding:0 8px;box-shadow:0 2px 8px rgba(0,0,0,.22)}
     .mnav-btn{flex:none;background:none;border:1px solid rgba(255,255,255,.45);color:#fff;
@@ -161,7 +160,6 @@
     .mnav-switch .mswitch{background:none;border:1px solid rgba(255,255,255,.45);color:#fff;
               border-radius:7px;padding:5px 9px;font-size:12px;cursor:pointer;font-family:inherit;line-height:1.2}
     .mnav-switch .mswitch.active{background:#fff;color:var(--accent);font-weight:700}
-    .mnav-spacer{height:50px;flex:none}
 
     /* 侧边栏 → 全屏抽屉 */
     .sidebar{position:fixed;top:0;left:0;bottom:0;width:84%;max-width:330px;z-index:10001;
@@ -226,6 +224,10 @@
 </head>
 <body>
 
+  <div class="soverlay" id="soverlay"></div>
+
+<div class="app">
+
   <!-- ===== 移动端：顶部吸顶导航栏 ===== -->
   <nav class="mnav" id="mnav">
     <button class="mnav-btn" id="mnav-menu" aria-label="目录">☰</button>
@@ -235,11 +237,6 @@
       <button class="mswitch" data-m="zh">中文</button>
     </div>
   </nav>
-  <div class="mnav-spacer" id="mnav-spacer"></div>
-
-  <div class="soverlay" id="soverlay"></div>
-
-<div class="app">
 
   <!-- ======= SIDEBAR / TOC ======= -->
   <aside class="sidebar" id="sidebar">
@@ -1123,11 +1120,10 @@ function initM(){
 function applyM(flag){
   MOBILE = flag;
   var mnav = document.getElementById('mnav');
-  var sp = document.getElementById('mnav-spacer');
   var e = document.getElementById('scroll-en');
   var z = document.getElementById('scroll-zh');
   if(flag){
-    mnav.style.display='flex'; sp.style.display='block';
+    mnav.style.display='flex';
     if(!window.__mInit){ window.__mInit=true; initM(); }
     // 重置为 en 显示（CSS 默认 en block / zh 隐藏）
     e.classList.remove('m-hidden'); e.classList.remove('m-show');
@@ -1135,7 +1131,7 @@ function applyM(flag){
     mLang = 'en';
     updateMnavTitle();
   } else {
-    mnav.style.display='none'; sp.style.display='none';
+    mnav.style.display='none';
     closeDrawer();
     e.classList.remove('m-show','m-hidden');
     z.classList.remove('m-show','m-hidden');
