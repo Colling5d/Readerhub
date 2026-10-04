@@ -124,10 +124,10 @@ def slot_replace(html):
     # 1) title
     html = re.sub(r"<title>[^<]*</title>",
                   "<title>Chinese and Americans — A Shared History · 中国人与美国人</title>", html, count=1)
-    # 2) 侧栏品牌
-    html = re.sub(r'<h1>[^<]*Cultures Colliding[^<]*</h1>', '<h1>中国人与美国人</h1>', html, count=1)
+    # 2) 侧栏品牌（书名用英文名，作者行跨换行匹配）
+    html = re.sub(r'<h1>[^<]*Cultures Colliding[^<]*</h1>', '<h1>Chinese and Americans: A Shared History</h1>', html, count=1)
     html = re.sub(r'<p>中英对照版 · Bilingual Edition<br>John R\. Haddad · 约翰·R·哈达德</p>',
-                  '<p>中英对照版 · Bilingual Edition<br>徐国琦 Xu Guoqi</p>', html, count=1)
+                  '<p>中英对照版 · Bilingual Edition<br>Xu Guoqi · 徐国琦</p>', html, count=1, flags=re.S)
     # 3) EN / ZH 数据（去掉原 /*__EN__*/ 等标记与数组）——按唯一标记索引替换
     en_start = html.index('const EN = /*__EN__*/')
     zh_start = html.index('const ZH = /*__ZH__*/')

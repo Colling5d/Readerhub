@@ -13,13 +13,13 @@
   header p{margin:0;color:var(--mute);font-size:14px}
   .wrap{max-width:980px;margin:0 auto;padding:8px 20px 60px}
   .count{font-size:13px;color:var(--mute);margin:8px 2px 16px}
-  #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;text-decoration:none;color:inherit;display:block;transition:transform .12s ease,box-shadow .12s ease}
+  #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;align-items:stretch}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:22px;text-decoration:none;color:inherit;display:flex;flex-direction:column;transition:transform .12s ease,box-shadow .12s ease}
   .card:hover{transform:translateY(-3px);box-shadow:0 8px 22px rgba(0,0,0,.08)}
-  .card h2{margin:0 0 4px;font-size:20px}
-  .card .author{font-size:13px;color:var(--accent);font-style:italic;margin-bottom:8px}
-  .card .desc{font-size:13.5px;color:var(--mute);line-height:1.6;margin:0}
-  .card .meta{margin-top:12px;font-size:12px;color:var(--mute);display:flex;gap:8px;flex-wrap:wrap}
+  .card h2{margin:0 0 4px;font-size:19px;line-height:1.35;flex:0 0 auto}
+  .card .author{font-size:13px;color:var(--accent);font-style:italic;margin:0 0 10px;flex:0 0 auto}
+  .card .desc{font-size:13.5px;color:var(--mute);line-height:1.7;margin:0;flex:1 1 auto}
+  .card .meta{margin-top:auto;padding-top:14px;font-size:12px;color:var(--mute);display:flex;gap:8px;flex-wrap:wrap}
   .tag{background:#f1ece2;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:11px}
   .tag.lang{background:#8a4422;border-color:#8a4422;color:#fff}
   .empty{color:var(--mute);text-align:center;padding:60px 0;font-size:15px}
@@ -45,7 +45,7 @@ var BOOKS = [
     "title": "Cultures Colliding",
     "subtitle": "American Missionaries, Chinese Resistance, and the Rise of Modern Institutions in China",
     "author": "John R. Haddad",
-    "description": "《文化碰撞：美国传教士、中国抵抗与现代制度在中国的兴起》。含前言、导论、十二章正文章节及结论，支持句子级中英对照阅读与高亮笔记。",
+    "description": "《文化碰撞：美国传教士、中国抵抗与现代制度在中国的兴起》——一部中英对照的精读之作。从前言、导论直到十二章正文与结论，逐句双语呈现，附句子级跨语言对齐高亮，适合细读、摘录与对照研习。",
     "tags": ["history", "china", "missions"],
     "featured": true,
     "lang": "en-zh",
@@ -54,10 +54,10 @@ var BOOKS = [
   },
   {
     "id": "chinese-americans-shared-history",
-    "title": "中国人与美国人 — 一部共有的历史",
-    "subtitle": "Chinese and Americans: A Shared History",
-    "author": "徐国琦 Xu Guoqi",
-    "description": "《中国人与美国人——一部共有的历史》全书英汉对照版。徐国琦以\"共同的历史\"视角，讲述中美两国从蒲安臣使团、留美幼童、戈鲲化，到古德诺、杜威与体育外交等相互塑造的篇章。含前言、六章正文、结语、注释、术语表、参考书目、致谢与索引，支持句子级中英对照阅读与高亮笔记。",
+    "title": "Chinese and Americans: A Shared History",
+    "subtitle": "《中国人与美国人——一部共有的历史》",
+    "author": "Xu Guoqi 徐国琦",
+    "description": "徐国琦以\"共同的历史\"视角，讲述中美两国从蒲安臣使团、留美幼童、戈鲲化，到古德诺、杜威与体育外交等相互塑造的篇章。全书英汉对照，含前言、六章正文、结语、注释、术语表、参考书目、致谢与索引，逐句双语呈现并附句子级跨语言对齐。", 
     "tags": ["history", "china", "america", "diplomacy", "shared-history"],
     "featured": true,
     "lang": "en-zh",
