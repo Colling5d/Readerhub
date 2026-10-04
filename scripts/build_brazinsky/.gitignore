@@ -1,0 +1,11 @@
+work/
+pdf/
+zip/
+unzip/
+*.log
+*.pdf
+stream_raw.json
+en_data.json
+reader_base.html
+book.json
+smoke.py
