@@ -148,9 +148,11 @@ def slot_replace(html):
     html = html[:en_start] + '__ENZH_DATA__' + html[zh_end:]
     # 4) SENT_ALIGN
     html = re.sub(r"var SENT_ALIGN=\{.*?\};", "var SENT_ALIGN=__SENT_ALIGN__;", html, count=1, flags=re.S)
-    # 5) POS_KEY
+    # 5) POS_KEY + BOOK_KEY（笔记存储键，必须随书独立）
     html = re.sub(r"var POS_KEY = 'readerhub_pos_[^']*'",
                   "var POS_KEY = 'readerhub_pos_chinese-americans-shared-history'", html, count=1)
+    html = re.sub(r"var BOOK_KEY = 'readerhub_notes_[^']*'",
+                  "var BOOK_KEY = 'readerhub_notes_chinese-americans-shared-history'", html, count=1)
     # 6) 默认启动章节 introduction -> intro
     html = html.replace(": 'introduction';", ": 'intro';")
     # 7) TOC 顺序
