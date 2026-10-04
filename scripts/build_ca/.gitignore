@@ -1,0 +1,8 @@
+# Build workspace - intermediate/derived data (do not commit)
+work/
+stream_raw.json
+en_data.json
+sections_meta.json
+reader_base.html
+smoke.py
+*.log
