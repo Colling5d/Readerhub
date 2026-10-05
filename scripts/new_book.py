@@ -246,6 +246,12 @@ def step_build(cfg, bd):
     r = sh("python3 build_reader.py", cwd=bd)
     print(r.stdout + r.stderr)
     log('阅读器已生成', 'build')
+    # 注入「目录折叠」交互（幂等；若 base 已带则跳过）
+    idx = os.path.join(BOOKS, cfg['id'], 'index.html')
+    tool = os.path.join(SCRIPTS, 'add_sidebar_toggle.py')
+    if os.path.isfile(idx) and os.path.isfile(tool):
+        sh(f'python3 {tool} "{idx}"', cwd=SCRIPTS)
+        log('目录折叠交互已注入', 'build')
 
 def step_register(cfg, bd):
     idx = os.path.join(BOOKS, cfg['id'], 'index.html')
