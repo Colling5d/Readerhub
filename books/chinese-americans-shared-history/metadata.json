@@ -4,9 +4,21 @@
   "subtitle": "《中国人与美国人——一部共有的历史》",
   "author": "Xu Guoqi 徐国琦",
   "description": "《中国人与美国人——一部共有的历史》全书英汉对照版。徐国琦以\"共同的历史\"视角，讲述中美两国从蒲安臣使团、留美幼童、戈鲲化，到古德诺、杜威与体育外交等相互塑造的篇章。含前言、注释（Note on Spelling）、导论、六章正文、结语、注释、术语表、参考书目、致谢与索引，支持句子级中英对照阅读与高亮笔记。",
-  "tags": ["history", "china", "america", "diplomacy", "shared-history"],
+  "tags": [
+    "history",
+    "china",
+    "america",
+    "diplomacy",
+    "shared-history"
+  ],
   "featured": true,
   "lang": "en-zh",
   "chapterCount": 15,
-  "updated": "2024-10-04"
+  "updated": "2024-10-04",
+  "publisher": "哈佛大学出版社",
+  "publisherEn": "Harvard University Press",
+  "publishYear": "2014",
+  "titleZh": "中国人与美国人——一部共有的历史",
+  "authorZh": "徐国琦",
+  "authorEn": "Xu Guoqi"
 }

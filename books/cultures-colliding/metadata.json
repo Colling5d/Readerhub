@@ -4,9 +4,19 @@
   "subtitle": "American Missionaries, Chinese Resistance, and the Rise of Modern Institutions in China",
   "author": "John R. Haddad",
   "description": "《文化碰撞：美国传教士、中国抵抗与现代制度在中国的兴起》。含前言、导论、十二章正文章节及结论，支持句子级中英对照阅读与高亮笔记。",
-  "tags": ["history", "china", "missions"],
+  "tags": [
+    "history",
+    "china",
+    "missions"
+  ],
   "featured": true,
   "lang": "en-zh",
   "chapterCount": 17,
-  "updated": "2024-09-30"
+  "updated": "2024-09-30",
+  "publisher": "天普大学出版社",
+  "publisherEn": "Temple University Press",
+  "publishYear": "2023",
+  "titleZh": "文化碰撞：美国传教士、中国抵抗与现代制度在中国的兴起",
+  "authorZh": "约翰·R·哈达德",
+  "authorEn": "John R. Haddad"
 }
