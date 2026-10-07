@@ -73,3 +73,9 @@ git push
 - 每本书一个文件夹，互不影响，方便单独更新。
 - `metadata.json` 字段：`id,title,subtitle,author,description,tags,lang,featured,updated`；`featured` 置顶展示。
 - 阅读器必须全自包含（内联 CSS/JS、无外部图片字体），才能被 Pages 稳定托管。
+
+## 许可证 / License
+
+本项目以 **MIT License** 开源，详见 [LICENSE](LICENSE)。你可以自由使用、修改、分发本站的代码与构建脚本（保留版权声明即可）。
+
+> 注意：`books/` 下各书收录的**英文原著正文**版权归其各自作者与出版方所有，仅作学习、研究与对照阅读之用，MIT 许可证不涵盖这部分第三方内容。
