@@ -313,75 +313,117 @@ JS = r'''
     return null;
   }
 
-  /* ---------- 强化 refreshPanel：注入工具条与删除按钮 ---------- */
-  function enhancePanel(){
+  /* ---------- 面板重建 ----------
+     原阅读器 refreshPanel 同一段（lang+gi）只渲染“最新一条”，
+     导致同段多条高亮时：列表里看不到其余条目、✕ 删的也不是显示的那条。
+     这里整段重写：逐条列出每一枚高亮/划线，各自带 ✕，
+     并用索引精确定位要删的笔记（不依赖 gi/from/to 去猜）。 */
+  function hexOf(n){ return n.color || '#ffe58a'; }
+
+  function buildPanel(){
     var p = document.getElementById('note-panel');
     if(!p) return;
-    var head = p.querySelector('.np-head');
-    if(head && !head.querySelector('.np-tools')){
-      // 头部右侧工具区：导出 + 清除全部 + 关闭
-      var span = head.querySelector('span');
-      if(span){
-        span.className = 'np-tools';
-        var exp = document.createElement('button');
-        exp.className = 'np-exp'; exp.textContent = '导出';
-        exp.title = '批量导出全部高亮笔记';
-        exp.addEventListener('click', function(e){
-          e.stopPropagation();
-          showExport(exp);
-        });
-        span.insertBefore(exp, span.firstChild);
+    // 按「章 -> 段 -> 段内位置」排序，列表更稳
+    var order = NOTES.map(function(n,i){ return i; });
+    order.sort(function(a,b){
+      var A=NOTES[a], B=NOTES[b];
+      if((A.sec||'') !== (B.sec||'')) return (A.sec||'') < (B.sec||'') ? -1 : 1;
+      if(+A.gi !== +B.gi) return +A.gi - +B.gi;
+      if(A.lang !== B.lang) return A.lang < B.lang ? -1 : 1;
+      return (A.from||0) - (B.from||0);
+    });
+
+    var html = '<div class="np-head"><b>📝 我的笔记 ('+NOTES.length+')</b>'
+             + '<span class="np-tools">'
+             + '<button class="np-exp">导出</button>'
+             + '<button id="np-clear" class="clr">清除全部</button>'
+             + '<button id="np-close">关闭</button></span></div>';
+
+    if(!NOTES.length){
+      html += '<div class="np-empty">还没有笔记。<br>在正文里选中文字，即可「高亮」或「划线」。</div>';
+    }else{
+      for(var k=0;k<order.length;k++){
+        var idx = order[k];
+        var n = NOTES[idx];
+        var t = '';
+        try{ t = window.noteText ? window.noteText(n) : ''; }catch(e){}
+        if(!t) t = '…';
+        var lang = n.lang==='en' ? '英' : '中';
+        var mark = n.type==='hl'
+          ? '<span style="background:'+hexOf(n)+'">&nbsp;&nbsp;&nbsp;</span>'
+          : '<span style="text-decoration:underline;text-decoration-thickness:2px;text-decoration-color:#e8504a">&nbsp;&nbsp;&nbsp;</span>';
+        html += '<div class="np-item" data-idx="'+idx+'" data-lang="'+n.lang+'" data-gi="'+n.gi+'" data-from="'+(n.from||0)+'" data-to="'+(n.to||0)+'">'
+             +  '<div class="np-meta"><b>'+escText(n.sec||'')+' · '+((+n.i||0)+1)+'</b>'
+             +  '<span style="color:var(--mute)">'+lang+'</span>'+mark
+             +  (n.type==='ul'?'<span style="font-size:10px;color:var(--mute)">划线</span>':'<span style="font-size:10px;color:var(--mute)">高亮</span>')
+             +  '<button class="np-del" data-idx="'+idx+'" title="删除这条笔记">✕</button>'
+             +  '</div><div class="np-text">'+escText(t)+'</div></div>';
       }
     }
-    // 每条加删除按钮
-    var items = p.querySelectorAll('.np-item');
-    for(var i=0;i<items.length;i++){
-      var it = items[i];
-      if(it.getAttribute('data-del-ready')) continue;
-      it.setAttribute('data-del-ready', '1');
-      var meta = it.querySelector('.np-meta');
-      if(!meta) continue;
-      var del = document.createElement('button');
-      del.className = 'np-del'; del.textContent = '✕';
-      del.title = '删除这条笔记';
-      meta.appendChild(del);
-    }
+    p.innerHTML = html;
+
+    var exp = p.querySelector('.np-exp');
+    if(exp) exp.addEventListener('click', function(e){ e.stopPropagation(); showExport(exp); });
+    var clr = p.querySelector('#np-clear');
+    if(clr) clr.addEventListener('click', function(e){ e.stopPropagation(); clearAll(); });
+    var cls = p.querySelector('#np-close');
+    if(cls) cls.addEventListener('click', function(e){ e.stopPropagation(); closePanel(); });
   }
 
-  /* 删除按钮采用「document 捕获阶段」监听：
-     连续滚动版给 #note-panel 也挂了捕获阶段的 .np-item 跳转监听
-     （并调用 stopImmediatePropagation），会把 ✕ 的点击吞掉。
-     document 的捕获监听先于面板自身触发，可抢在它前面处理删除。 */
+  function escText(s){
+    return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  }
+
+  function clearAll(){
+    if(!NOTES.length) return;
+    if(!window.confirm('确定清除全部 '+NOTES.length+' 条笔记？')) return;
+    NOTES.length = 0;
+    try{ saveNotes(); }catch(e){}
+    try{ renderAllMarks(); }catch(e){}
+    try{ refreshPanel(); }catch(e){}
+    if(window.showToast) showToast('已清除全部笔记');
+  }
+
+  function closePanel(){
+    var p = document.getElementById('note-panel');
+    if(p) p.style.display = 'none';
+    if(typeof window.hidePanel === 'function'){ try{ window.hidePanel(); }catch(e){} }
+  }
+
+  /* ✕ 删除：document 捕获阶段监听，抢在面板自身的 .np-item 跳转
+     （捕获 + stopImmediatePropagation）之前处理。 */
   document.addEventListener('click', function(e){
     var del = e.target && e.target.closest && e.target.closest('#note-panel .np-del');
     if(!del) return;
     e.preventDefault();
     e.stopPropagation();
     if(e.stopImmediatePropagation) e.stopImmediatePropagation();
-    var parent = del.closest('.np-item');
-    if(!parent) return;
-    var lang = parent.getAttribute('data-lang') === 'zh' ? 'zh' : 'en';
-    var gi = +parent.getAttribute('data-gi');
-    var cands = NOTES.filter(function(x){ return x.lang===lang && +x.gi===gi; })
-                     .sort(function(a,b){ return a.from-b.from; });
-    // 面板每段只显示一条（首条）；删除时移除该段最早的一条高亮
-    if(!cands.length){ if(window.showToast) showToast('未找到该笔记'); return; }
-    deleteNote(cands[0]);
+    var idx = +del.getAttribute('data-idx');
+    if(isNaN(idx) || idx<0 || idx>=NOTES.length){
+      // 兜底：用 data 属性反查
+      var item = del.closest('.np-item');
+      if(item){
+        var lang = item.getAttribute('data-lang')==='zh'?'zh':'en';
+        var gi = +item.getAttribute('data-gi');
+        var from = +item.getAttribute('data-from');
+        var to = +item.getAttribute('data-to');
+        idx = -1;
+        for(var k=0;k<NOTES.length;k++){
+          var x=NOTES[k];
+          if(x.lang===lang && +x.gi===gi && (+x.from||0)===from && (+x.to||0)===to){ idx=k; break; }
+        }
+      }
+    }
+    if(idx<0 || idx>=NOTES.length){ if(window.showToast) showToast('未找到该笔记'); return; }
+    deleteNote(NOTES[idx]);
   }, true);
 
-  // 覆盖 refreshPanel：先调用原实现，再增强
-  if(typeof window.refreshPanel === 'function'){
-    var __rp = window.refreshPanel;
-    window.refreshPanel = function(){
-      var r = __rp.apply(this, arguments);
-      enhancePanel();
-      return r;
-    };
-    try{ refreshPanel = window.refreshPanel; }catch(e){}
-  }
+  /* 覆盖 refreshPanel：改为逐条列出全部笔记 */
+  window.refreshPanel = buildPanel;
+  try{ refreshPanel = window.refreshPanel; }catch(e){}
 
-  // 初始化时若面板已存在也增强一次
-  enhancePanel();
+  // 初始化时若面板已存在也重建一次
+  buildPanel();
 
   window.__notesExport = { markdown: buildMarkdown, text: buildText, json: buildJSON, citation: citation };
 })();
@@ -432,9 +474,19 @@ def load_meta(book_html_path):
     }
     return out
 
+def strip_old(html):
+    """移除旧的注入内容，保证脚本可反复运行、升级版本时能覆盖旧 JS/CSS。"""
+    html = re.sub(r'\n\s*/\* ===== 笔记删除 \+ 批量导出 \(NOTES-EXPORT\) ===== \*/.*?(?=</style>)',
+                  '\n', html, flags=re.S)
+    html = re.sub(r'\n?<script>\s*window\.BOOK_META=.*?</script>\n?', '\n', html, flags=re.S)
+    html = re.sub(r'\n?<script>\s*/\* ============ 笔记删除 \+ 批量导出 \(NOTES-EXPORT\) ============ \*/.*?</script>\n?',
+                  '\n', html, flags=re.S)
+    return html
+
+
 def patch(html, book_html_path):
-    if MARK in html:
-        return html, False
+    had = MARK in html
+    html = strip_old(html)
     meta = load_meta(book_html_path)
     meta_js = '<script>window.BOOK_META=' + json.dumps(meta, ensure_ascii=False) + ';</script>\n'
     if '</style>' not in html:
