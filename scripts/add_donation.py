@@ -19,20 +19,20 @@ import sys, os, re, base64, io, html as _html, argparse
 
 CSS = '''
   /* ===== 赞赏支持 (DONATION) ===== */
-  .donate{max-width:600px;margin:36px auto 22px;padding:14px 16px;display:flex;gap:16px;
+  .donate{max-width:640px;margin:36px auto 22px;padding:16px 18px;display:flex;gap:18px;
     align-items:center;text-align:left;background:var(--panel,#fff);
     border:1px solid var(--line,#e6e1d6);border-radius:14px;
     box-shadow:0 6px 20px rgba(0,0,0,.06);font-family:var(--reader-font,inherit);color:var(--ink,#2b2b2b)}
-  .donate .donate-img{flex:0 0 auto;width:auto;height:auto;max-width:118px;max-height:150px;
-    border-radius:10px;border:1px solid var(--line,#e6e1d6);background:#fff;
-    box-shadow:0 4px 12px rgba(0,0,0,.08)}
+  .donate .donate-img{flex:0 0 auto;width:auto;height:auto;max-width:168px;max-height:210px;
+    padding:8px;border-radius:12px;border:1px solid var(--line,#e6e1d6);background:#fff;
+    box-shadow:0 4px 14px rgba(0,0,0,.10)}
   .donate .donate-body{flex:1 1 auto;min-width:0}
   .donate h3{margin:0 0 6px;font-size:14px;letter-spacing:.5px;color:var(--accent,#8a4422)}
   .donate .donate-text{margin:0;font-size:12.5px;line-height:1.75;color:var(--ink-soft,#6f6a60);
     white-space:pre-line}
   @media (max-width:560px){
     .donate{flex-direction:column;text-align:center}
-    .donate .donate-img{max-height:168px}
+    .donate .donate-img{max-height:260px;max-width:min(72vw,260px)}
   }
 '''
 
