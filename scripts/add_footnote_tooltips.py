@@ -18,7 +18,7 @@
        这里包裹 renderMarks：重绘前把 .fnmark 换成哨兵文本（不可见字符包裹数字，
        偏移与 textContent 一致），重绘后再还原为 <sup>，脚注与高亮可共存。
 """
-import sys, os
+import sys, os, re
 
 MARK = 'FOOTNOTE-TOOLTIP'
 
@@ -367,24 +367,58 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
     var rec = lookup(sid, lang, n);
     return rec ? {rec:rec, n:n, key:sid + ':' + lang + ':' + n} : null;
   }
-  document.addEventListener('mouseover', function(e){
-    var m = markOf(e.target); if(!m) return;
-    var info = recOf(m); if(!info) return;
+  var pinnedEl = null;   // 被点击/长按固定住的脚注（触摸设备友好）
+  var lastHover = null;  // 最近悬停的脚注（滚动时重定位用）
+
+  function openFor(m, info){
+    pinnedEl = m;
     showTip(m, info.rec.text, info.n, info.rec.alt);
-  });
+    tip.setAttribute('data-for', info.key);
+  }
+
+  document.addEventListener('mouseover', function(e){
+    var m = markOf(e.target);
+    lastHover = m;
+    if(!m) return;
+    var info = recOf(m); if(!info) return;
+    if(pinnedEl && pinnedEl !== m) pinnedEl = null;   // 移动到别的脚注则取消固定
+    showTip(m, info.rec.text, info.n, info.rec.alt);
+    tip.setAttribute('data-for', info.key);
+  }, true);
   document.addEventListener('mouseout', function(e){
     var m = markOf(e.target); if(!m) return;
+    if(pinnedEl === m) return;          // 已固定：不因移出而关闭
     hideTip();
   });
+  // 点击 / 触摸：切换显示（触摸设备没有 hover，靠这里）
   document.addEventListener('click', function(e){
-    var m = markOf(e.target); if(!m) return;
-    var info = recOf(m); if(!info) return;
-    if(tip.classList.contains('on') && tip.getAttribute('data-for') === info.key){ hideTip(); }
-    else { showTip(m, info.rec.text, info.n, info.rec.alt); tip.setAttribute('data-for', info.key); }
+    var m = markOf(e.target);
+    if(m){
+      var info = recOf(m);
+      if(info){
+        if(pinnedEl === m && tip.classList.contains('on')){ pinnedEl = null; hideTip(); }
+        else { openFor(m, info); }
+        e.preventDefault();
+        return;
+      }
+    }
+    // 点击别处：关闭已固定的浮层
+    if(pinnedEl){ pinnedEl = null; hideTip(); }
   });
-  document.addEventListener('keydown', function(e){ if(e.key === 'Escape') hideTip(); });
-  window.addEventListener('scroll', hideTip, true);
-  window.addEventListener('resize', hideTip);
+  document.addEventListener('keydown', function(e){ if(e.key === 'Escape'){ pinnedEl = null; hideTip(); } });
+  // 滚动时：若已固定则跟随重定位，否则仅在指针已离开时收敛（避免误关）
+  function reposition(){
+    var m = pinnedEl || lastHover;
+    if(!m || !tip.classList.contains('on')) return;
+    var r = m.getBoundingClientRect();
+    var tw = tip.offsetWidth, th = tip.offsetHeight;
+    var left = Math.max(8, Math.min(window.innerWidth - tw - 8, r.left + r.width/2 - tw/2));
+    var top = r.top - th - 10; if(top < 8) top = r.bottom + 10;
+    top = Math.max(8, Math.min(window.innerHeight - th - 8, top));
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  window.addEventListener('scroll', function(){ if(pinnedEl) reposition(); else hideTip(); }, true);
+  window.addEventListener('resize', reposition);
 
   window.__annotateFootnotes = annotateAll;
   window.__fnLookup = lookup;
@@ -392,9 +426,18 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
 })();
 '''
 
+def strip_old(html):
+    """移除旧的注入内容，保证脚本可反复运行、升级版本时能覆盖旧 JS/CSS。"""
+    html = re.sub(r'\n\s*/\* ===== 脚注悬浮提示 \(FOOTNOTE-TOOLTIP\) ===== \*/.*?(?=</style>)',
+                  '\n', html, flags=re.S)
+    html = re.sub(r'\n?<script>\s*/\* ============ 脚注悬浮提示 \(FOOTNOTE-TOOLTIP\) ============ \*/.*?</script>\n?',
+                  '\n', html, flags=re.S)
+    return html
+
+
 def patch(html):
-    if MARK in html:
-        return html, False
+    had = MARK in html
+    html = strip_old(html)
     if '</style>' not in html:
         raise RuntimeError('未找到 </style>')
     html = html.replace('</style>', CSS + '</style>', 1)
