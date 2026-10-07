@@ -19,19 +19,3 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
-
----
-
-注意 / Note:
-本许可证仅涵盖本仓库的**代码与站点构建脚本**（即阅读器的 HTML/CSS/JS 实现、
-scripts/ 下的工具、以及本站自身撰写的说明文字）。
-
-books/ 目录下各书中收录的**英文原著正文**版权归其各自作者与出版方所有，
-仅作学习、研究与对照阅读之用；其**中文译文**的著作权归属及使用范围，
-不因本 MIT 许可证而被授权转授。若需再分发原著正文，请自行取得相应授权。
-
-The MIT license above applies to the code and site-building scripts of this
-repository. The original English texts collected under books/ remain the
-property of their respective authors and publishers, and are included for
-study and reference only; the MIT license does not grant rights to
-redistribute those third-party texts.
