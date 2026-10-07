@@ -17,7 +17,7 @@
     retry       补齐缺失段
     build       生成 books/<id>/index.html
     register    metadata.json + 登记首页 BOOKS
-    deploy      git commit + push（带代理）
+    deploy      git commit + push（自动探测代理，见 scripts/gitpush.sh）
 
 book.json 字段:
     id         必填 唯一标识（小写字母数字连字符）
@@ -288,9 +288,16 @@ def step_register(cfg, bd):
 
 def step_deploy(cfg, bd):
     bid = cfg['id']
-    r = sh(f"cd {ROOT} && git add books/{bid} scripts/build_{bid} index.html scripts/templates scripts/new_book.py && "
-           f"git commit -m 'add book: {bid}' && "
-           f"HTTPS_PROXY=http://127.0.0.1:7890 HTTP_PROXY=http://127.0.0.1:7890 git push origin main")
+    r = sh(f"cd {ROOT} && git add books/{bid} scripts/build_{bid} index.html scripts/templates scripts/new_book.py scripts/gitpush.sh && "
+           f"git commit -m 'add book: {bid}'")
+    print(r.stdout + r.stderr)
+    # 推送：交给 gitpush.sh 自动探测代理（本地代理可用则走代理，否则直连）。
+    # 旧写法把 127.0.0.1:7890 写死，代理未开时会导致 push 失败。
+    push_sh = os.path.join(SCRIPTS, 'gitpush.sh')
+    if os.path.isfile(push_sh):
+        r = sh(f"bash '{push_sh}' origin main", cwd=ROOT)
+    else:
+        r = sh("git push origin main", cwd=ROOT)
     print(r.stdout + r.stderr)
 
 ORDER = ['split_pdf', 'mineru', 'unzip', 'extract', 'sections', 'translate', 'retry', 'build', 'register', 'deploy']
