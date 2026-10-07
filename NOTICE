@@ -1,14 +1,14 @@
 NOTICE / 第三方内容说明
 ========================
 
-本仓库以 MIT 许可证开源（见 LICENSE），该许可证仅涵盖本项目的
+本仓库以 CC BY-NC 4.0 许可证授权（见 LICENSE），该许可证仅涵盖本项目的
 **代码与站点构建脚本**，即：
 
 - 阅读器的 HTML / CSS / JavaScript 实现
 - scripts/ 目录下的全部工具脚本
 - 本站自身撰写的说明文字（README 等）
 
-以下内容**不在** MIT 许可证的授权范围内：
+以下内容**不在** CC BY-NC 4.0 许可证的授权范围内：
 
 - books/ 目录下各书中收录的**英文原著正文**
   版权归其各自作者与出版方所有，此处仅作学习、研究与对照阅读之用。
@@ -19,8 +19,8 @@ NOTICE / 第三方内容说明
 
 ------------------------------------------------------------------------
 
-The MIT license in LICENSE applies only to this project's code and
+The CC BY-NC 4.0 license in LICENSE applies only to this project's code and
 site-building scripts. The original English texts collected under books/
 remain the property of their respective authors and publishers and are
-included for study and reference only; the MIT license does not grant
-rights to redistribute those third-party texts.
+included for study and reference only; the license does not grant rights to
+redistribute those third-party texts.
