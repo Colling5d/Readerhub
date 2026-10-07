@@ -91,11 +91,11 @@ git push
 另外还有 4 种字体（宋体 / 楷体 / 黑体 / 系统）与 4 档字号（小 / 中 / 大 / 特大）。
 
 **主页 ⇄ 书页同步**：主题 / 字体 / 字号写入浏览器 `localStorage`（`readerhub_theme` /
-`readerhub_font` / `readerhub_scale`），主页选一次即全局沿用。书页只内置 4 套阅读主题，
-遇到趣味主题时会**自动回退**到最接近的一套（如像素→深色、报纸→护眼），且**不会覆盖**主页的趣味主题选择。
+`readerhub_font` / `readerhub_scale`）。**首页与书页都支持全部 15 套主题**，
+无论在哪一侧切换，另一侧都会自动沿用（双向同步）。
 
 - 首页脚本：`scripts/add_home_theme.py`（15 套主题 + 纹样）
-- 书页脚本：`scripts/add_theme_and_hud.py`（4 套阅读主题 + 字体 + 章节 HUD + 回退映射）
+- 书页脚本：`scripts/add_theme_and_hud.py`（同 15 套主题 + 纹样 + 字体 + 章节 HUD）
 
 ```bash
 # 重新注入首页主题（幂等）
