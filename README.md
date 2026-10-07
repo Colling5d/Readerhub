@@ -16,7 +16,7 @@
 
 ```
 ReaderHub
-├── index.html                      # 总站首页，自动列出所有书
+├── index.html                      # 总站首页，自动列出所有书（含多风格主题切换）
 ├── books/                          # 每本书一个文件夹
 │   └── cultures-colliding/         # 例：中英对照《Cultures Colliding》
 │       ├── index.html              # 自包含阅读器（无外部依赖）
@@ -24,10 +24,13 @@ ReaderHub
 └── scripts/
     ├── add_book.py                # 新增一本书的自动化脚本
     ├── add_sidebar_toggle.py      # 注入目录折叠交互
-    ├── add_theme_and_hud.py       # 注入阅读主题 / 字体 / 章节 HUD
+    ├── add_theme_and_hud.py       # 注入书页阅读主题 / 字体 / 章节 HUD
+    ├── add_home_theme.py         # 注入首页多风格主题（与书页共用主题设置）
     ├── add_continuous_scroll.py   # 注入连续滚动（跨章节阅读）
     ├── add_footnote_tooltips.py  # 注入脚注悬浮提示（悬停上标编号显示注释）
-    └── add_donation.py          # 注入微信赞赏收款码（base64 内嵌）
+    ├── add_notes_export.py       # 注入笔记逐条删除 + 批量导出（含引文格式）
+    ├── add_donation.py          # 注入微信赞赏收款码（base64 内嵌）
+    └── gitpush.sh               # 推送助手（自动探测本地代理，可用则走代理否则直连）
 ├── assets/
 │   └── donation-qr.jpg         # 赞赏收款码源图（供新增书复用）
 ```
@@ -55,6 +58,25 @@ git push
 ```
 
 脚本若有外部资源（`http`/`cdn` 引用、外部 `<script src>`）会**拒绝**——因为 GitHub Pages 无法正确加载外部相对路径资源，且跨域受限。构建阅读器时请保持全内联。
+
+## 主题 / 字体 / 字号
+
+首页与每本书的阅读器**共用同一套显示设置**（保存在浏览器 `localStorage`）：
+
+- 四套主题：亮色 / 护眼米黄 / 深色 / 夜间黑
+- 四种字体：宋体 / 楷体 / 黑体 / 系统
+- 四档字号：小 / 中 / 大 / 特大
+
+在首页点左下角「⚙ 主题」选择后，进入任意书页会自动沿用；反之在书页里改，也会同步回首页。
+相关脚本：首页为 `scripts/add_home_theme.py`，书页为 `scripts/add_theme_and_hud.py`，两者使用相同的 key
+（`readerhub_theme` / `readerhub_font` / `readerhub_scale`）与变量名（`--bg`、`--panel`、`--ink`、`--accent`、`--line` 等）。
+
+```bash
+# 重新注入首页主题（幂等）
+python3 scripts/add_home_theme.py
+# 移除首页主题注入
+python3 scripts/add_home_theme.py --remove
+```
 
 ## 一次性部署步骤（首次）
 

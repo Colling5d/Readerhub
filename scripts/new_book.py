@@ -288,7 +288,8 @@ def step_register(cfg, bd):
 
 def step_deploy(cfg, bd):
     bid = cfg['id']
-    r = sh(f"cd {ROOT} && git add books/{bid} scripts/build_{bid} index.html scripts/templates scripts/new_book.py scripts/gitpush.sh && "
+    r = sh(f"cd {ROOT} && git add books/{bid} scripts/build_{bid} index.html assets "
+           f"scripts/templates scripts/new_book.py scripts/*.py scripts/gitpush.sh && "
            f"git commit -m 'add book: {bid}'")
     print(r.stdout + r.stderr)
     # 推送：交给 gitpush.sh 自动探测代理（本地代理可用则走代理，否则直连）。
