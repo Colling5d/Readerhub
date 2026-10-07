@@ -246,12 +246,14 @@ def step_build(cfg, bd):
     r = sh("python3 build_reader.py", cwd=bd)
     print(r.stdout + r.stderr)
     log('阅读器已生成', 'build')
-    # 注入「目录折叠」交互（幂等；若 base 已带则跳过）
+    # 注入「目录折叠」「主题/字体/章节 HUD」「连续滚动」「脚注悬浮提示」（幂等；若 base 已带则跳过）
     idx = os.path.join(BOOKS, cfg['id'], 'index.html')
-    tool = os.path.join(SCRIPTS, 'add_sidebar_toggle.py')
-    if os.path.isfile(idx) and os.path.isfile(tool):
-        sh(f'python3 {tool} "{idx}"', cwd=SCRIPTS)
-        log('目录折叠交互已注入', 'build')
+    for tool in ('add_sidebar_toggle.py', 'add_theme_and_hud.py', 'add_continuous_scroll.py', 'add_footnote_tooltips.py'):
+        tp = os.path.join(SCRIPTS, tool)
+        if os.path.isfile(idx) and os.path.isfile(tp):
+            sh(f'python3 {tool} "{idx}"', cwd=SCRIPTS)
+            log(f'{tool} 已注入', 'build')
+    # 注：赞赏模块只放在首页底部（scripts/add_donation.py），不在单本书内注入。
 
 def step_register(cfg, bd):
     idx = os.path.join(BOOKS, cfg['id'], 'index.html')
