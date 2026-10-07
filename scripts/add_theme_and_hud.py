@@ -214,10 +214,29 @@ JS = r'''
   var curFont  = get(FONT_KEY,  'serif');
   var curScale = get(SCALE_KEY, '1');
 
+  // 主页的「趣味主题」（动漫/像素/赛博朋克/水墨/森林/海洋/报纸/糖果/漫画/樱花夜/蒸汽波）
+  // 书页只支持 4 套阅读主题，这里映射到最接近的一套；
+  // 书页内下拉选择仍只写回 4 套阅读主题，不会覆盖主页的趣味主题选择。
+  var FUN_FALLBACK = {
+    anime:'light', pixel:'dark', cyber:'dark', ink:'light', forest:'light',
+    ocean:'light', news:'sepia', candy:'light', manga:'light', sakura:'night', vapor:'dark'
+  };
+  var READING = ['light','sepia','dark','night'];
+  function toReading(id){
+    if(READING.indexOf(id) >= 0) return id;
+    if(FUN_FALLBACK[id]) return FUN_FALLBACK[id];
+    var m = get(THEME_KEY + '_book', '');
+    if(READING.indexOf(m) >= 0) return m;
+    return 'light';
+  }
+
   function themeMeta(id){ for(var i=0;i<THEMES.length;i++) if(THEMES[i].id===id) return THEMES[i]; return THEMES[0]; }
   function fontMeta(id){ for(var i=0;i<FONTS.length;i++) if(FONTS[i].id===id) return FONTS[i]; return FONTS[0]; }
 
-  function applyTheme(id){
+  function applyTheme(id, persist){
+    // 书页只应用阅读主题；趣味主题映射为最接近的一套。
+    // persist=true 时才写回 THEME_KEY（用户手动选择时）。
+    id = toReading(id);
     curTheme = id;
     if(id === 'light'){ document.documentElement.removeAttribute('data-theme'); }
     else{ document.documentElement.setAttribute('data-theme', id); }
@@ -227,7 +246,8 @@ JS = r'''
       if(!m){ m = document.createElement('meta'); m.name='theme-color'; document.head.appendChild(m); }
       m.content = themeMeta(id).bg;
     }catch(e){}
-    set(THEME_KEY, id);
+    // 用户手动选择时覆盖共用 key；首屏回退应用时不写，保留主页的趣味主题。
+    if(persist) set(THEME_KEY, id);
   }
   function applyFont(id){
     curFont = id;
@@ -243,7 +263,7 @@ JS = r'''
   }
 
   // ---- 首屏尽早应用（避免闪烁）----
-  applyTheme(curTheme);
+  applyTheme(curTheme, false);  // 内部会做趣味主题 -> 阅读主题的回退，且不写回 key
   applyFont(curFont);
   applyScale(curScale);
 
@@ -282,7 +302,7 @@ JS = r'''
   panel.addEventListener('click', function(e){
     e.stopPropagation();
     var sw = e.target.closest('[data-theme-pick]');
-    if(sw){ applyTheme(sw.getAttribute('data-theme-pick')); renderPanel(); return; }
+    if(sw){ applyTheme(sw.getAttribute('data-theme-pick'), true); renderPanel(); return; }
     var fo = e.target.closest('[data-font-pick]');
     if(fo){ applyFont(fo.getAttribute('data-font-pick')); renderPanel(); return; }
     var sc = e.target.closest('[data-scale-pick]');
@@ -407,9 +427,21 @@ JS = r'''
 })();
 '''
 
+def strip_old(html):
+    """移除旧的注入内容，保证脚本可反复运行、升级版本时能覆盖旧 JS/CSS。"""
+    html = re.sub(r'\n\s*/\* ===== 阅读主题 / 字体 / 章节 HUD \(READER-THEME-HUD\) ===== \*/.*?(?=</style>)',
+                  '\n', html, flags=re.S)
+    # 按钮 + 设置面板 + 章节 HUD（即 BUTTONS 整块）
+    html = re.sub(r'\n?\s*<button class="reader-settings-btn".*?<div class="chapter-hud"[^>]*>.*?</div>\s*\n?',
+                  '\n', html, flags=re.S)
+    html = re.sub(r'\n?<script>\s*/\* ============ 阅读主题 / 字体 / 章节 HUD \(READER-THEME-HUD\) ============ \*/.*?</script>\n?',
+                  '\n', html, flags=re.S)
+    return html
+
+
 def patch(html):
-    if MARK in html:
-        return html, False
+    had = MARK in html
+    html = strip_old(html)
     if '</style>' not in html:
         raise RuntimeError('未找到 </style>')
     html = html.replace('</style>', CSS + '</style>', 1)
