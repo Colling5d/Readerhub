@@ -1,26 +1,33 @@
-NOTICE / 第三方内容说明
-========================
+版权所有 © 2026 竹履 (Colling5d) · 保留所有权利
+All Rights Reserved
+======================================================
 
-本仓库以 CC BY-NC 4.0 许可证授权（见 LICENSE），该许可证仅涵盖本项目的
-**代码与站点构建脚本**，即：
+本项目（包括但不限于：阅读器的 HTML / CSS / JavaScript 实现、
+scripts/ 目录下的全部构建脚本、页面设计与本说明文字）的著作权
+归作者所有，**保留所有权利**。
 
-- 阅读器的 HTML / CSS / JavaScript 实现
-- scripts/ 目录下的全部工具脚本
-- 本站自身撰写的说明文字（README 等）
+未经作者事先书面许可，任何人不得以任何形式或手段
+复制、下载后再分发、修改、改编、公开传播、镜像、再发布，
+或用于任何商业及非商业目的。
 
-以下内容**不在** CC BY-NC 4.0 许可证的授权范围内：
-
-- books/ 目录下各书中收录的**英文原著正文**
-  版权归其各自作者与出版方所有，此处仅作学习、研究与对照阅读之用。
-  如需再分发原文，请自行取得相应授权。
-- 各书的中文译文的使用范围由作者另行决定。
-
-第三方商标、书名、作者姓名等归各自权利人所有。
+（通过 GitHub Pages 在浏览器中在线阅读本站内容，不受此限制。）
 
 ------------------------------------------------------------------------
+第三方内容说明
 
-The CC BY-NC 4.0 license in LICENSE applies only to this project's code and
-site-building scripts. The original English texts collected under books/
-remain the property of their respective authors and publishers and are
-included for study and reference only; the license does not grant rights to
-redistribute those third-party texts.
+books/ 目录下各书收录的**英文原著正文**，其版权归各自作者与出版方
+所有，此处仅作学习、研究与对照阅读之用，不代表作者拥有其著作权，
+亦不在本项目著作权范围内。
+
+------------------------------------------------------------------------
+Copyright (c) 2026 竹履 (Colling5d). All Rights Reserved.
+
+No part of this project (including its code, build scripts, page design,
+and the author's own written text) may be reproduced, redistributed,
+modified, adapted, mirrored, republished, or used for any commercial or
+non-commercial purpose without the prior written permission of the author.
+
+Viewing the site online via GitHub Pages is not restricted by the above.
+
+The original English texts collected under books/ remain the property of
+their respective authors and publishers.
