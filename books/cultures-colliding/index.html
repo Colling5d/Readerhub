@@ -2923,10 +2923,134 @@ function onPosNow(){ clearTimeout(window.__posT); window.__posT = setTimeout(wri
     if(!removed) return false;
     try{ saveNotes(); }catch(e){}
     try{ renderAllMarks(); }catch(e){}
+    // 该段可能已无任何笔记：renderAllMarks 不会重绘它，导致残留 <mark>。
+    // 因此这里显式重绘被删除笔记所在的那一段（清掉标记）。
+    try{
+      var root = (n.lang==='zh') ? document.getElementById('article-zh') : document.getElementById('article-en');
+      var el = root && root.querySelector('[data-gi="'+n.gi+'"]');
+      if(el && typeof window.renderMarks === 'function') window.renderMarks(el);
+    }catch(e){}
     try{ refreshPanel(); }catch(e){}
     if(window.showToast) showToast('已删除该条笔记');
     return true;
   }
+  /* ---------- 点击正文里的高亮/划线 → 直接删除 ----------
+     需求：不用打开「笔记」面板，直接点那段彩色文字就能删掉这条高亮。
+     做法：
+       1) 包裹 renderMarks，在每枚 mark.hlmark / u.ulnote 上写入 data-nf/data-nt
+          （段内起止偏移），使「被点的标记 → 对应笔记」可精确对应；
+       2) 在 document 上监听 click，命中标记则按 lang+gi+from+to 删除该条；
+       3) 区分「单击」与「拖选」：按下与抬起位置基本重合、且没有选中文字时才算点击，
+          避免用户拖拽选词时误删。
+     同时提供一个可选开关（默认开启）：window.__clickDeleteHighlight。 */
+  window.__clickDeleteHighlight = (window.__clickDeleteHighlight !== false);
+
+  // 1) 包裹 renderMarks：给高亮/划线标记打上偏移信息
+  function tagMarks(root){
+    if(!root || !root.querySelectorAll) root = document;
+    var ms = root.querySelectorAll('mark.hlmark, u.ulnote');
+    for(var i=0;i<ms.length;i++){
+      var m = ms[i];
+      if(m.getAttribute('data-nf')!=null) continue;
+      // 该标记在段落纯文本中的起止偏移（跳过已处理的其它标记，逐枚累加）
+      var para = m.closest('[data-gi]');
+      if(!para) continue;
+      var off = textOffsetWithin(para, m);
+      var len = (m.textContent||'').length;
+      m.setAttribute('data-nf', off);
+      m.setAttribute('data-nt', off+len);
+    }
+  }
+  function textOffsetWithin(para, node){
+    // 用一个 Range 测 node 起点相对 para 内容的字符偏移
+    try{
+      var r = document.createRange();
+      r.selectNodeContents(para);
+      r.setEndBefore(node);
+      return r.toString().length;
+    }catch(e){ return 0; }
+  }
+  if(typeof window.renderMarks === 'function'){
+    var __rm2 = window.renderMarks;
+    window.renderMarks = function(el){
+      var r = __rm2.apply(this, arguments);
+      try{ tagMarks(el); }catch(e){}
+      return r;
+    };
+    try{ renderMarks = window.renderMarks; }catch(e){}
+  }
+  // 全文重绘后再补标一次
+  if(typeof window.renderAllMarks === 'function'){
+    var __ram = window.renderAllMarks;
+    window.renderAllMarks = function(){ var r=__ram.apply(this,arguments); try{ tagMarks(document); }catch(e){} return r; };
+    try{ renderAllMarks = window.renderAllMarks; }catch(e){}
+  }
+  // 首屏已有标记也补标
+  setTimeout(function(){ try{ tagMarks(document); }catch(e){} }, 400);
+
+  // 2) 点击删除（含拖选保护）
+  var _downX=0,_downY=0,_downT=0;
+  document.addEventListener('mousedown', function(e){
+    _downX=e.clientX; _downY=e.clientY; _downT=Date.now();
+  }, true);
+  document.addEventListener('click', function(e){
+    if(window.__clickDeleteHighlight === false) return;
+    var t = e.target;
+    if(!t || !t.closest) return;
+    var m = t.closest('mark.hlmark, u.ulnote');
+    if(!m) return;
+    var para = m.closest('[data-gi]');
+    if(!para) return;
+    // 拖选保护：位移过大 / 耗时过长 → 视为选词，不删
+    var dist = Math.abs(e.clientX-_downX) + Math.abs(e.clientY-_downY);
+    var dt = Date.now() - _downT;
+    var sel = window.getSelection && window.getSelection();
+    var hasSel = sel && !sel.isCollapsed && String(sel).length>0;
+    if(dist > 6 || hasSel && dt > 120) return;
+    var lang = para.getAttribute('data-lang') || (para.closest('#article-zh') ? 'zh' : 'en');
+    var gi = +para.getAttribute('data-gi');
+    var from = +m.getAttribute('data-nf');
+    var to = +m.getAttribute('data-nt');
+    var target = findNoteByKey(lang, gi, from, to);
+    if(!target){
+      // 兜底：同段内取包含点击位置的最近一条
+      var cands = NOTES.filter(function(x){ return x.lang===lang && +x.gi===gi; });
+      target = cands.sort(function(a,b){ return Math.abs(a.from-from)-Math.abs(b.from-from); })[0];
+    }
+    if(!target) return;
+    e.preventDefault();
+    e.stopPropagation();
+    if(e.stopImmediatePropagation) e.stopImmediatePropagation();
+    var removed = target;
+    lastDeleted = JSON.parse(JSON.stringify(removed));
+    deleteNote(target);
+    if(window.showToast) showToast('已删除这条' + (removed.type==='ul' ? '划线' : '高亮') + '（按 Ctrl/⌘+Z 撤销）');
+  }, true);
+
+  // 误删保护：记录最近一次删除，支持 Ctrl/⌘+Z 恢复
+  var lastDeleted = null;
+  document.addEventListener('keydown', function(e){
+    if(!lastDeleted) return;
+    if((e.ctrlKey || e.metaKey) && (e.key==='z' || e.key==='Z')){
+      var n = lastDeleted; lastDeleted = null;
+      // 避免重复恢复
+      var dup = NOTES.some(function(x){ return x.lang===n.lang && +x.gi===+n.gi && x.from===n.from && x.to===n.to; });
+      if(!dup){
+        NOTES.push(n);
+        try{ saveNotes(); }catch(e2){}
+        try{ renderAllMarks(); }catch(e2){}
+        try{
+          var root=(n.lang==='zh')?document.getElementById('article-zh'):document.getElementById('article-en');
+          var el=root&&root.querySelector('[data-gi="'+n.gi+'"]');
+          if(el) window.renderMarks(el);
+        }catch(e2){}
+        try{ refreshPanel(); }catch(e2){}
+        if(window.showToast) showToast('已恢复刚才删除的笔记');
+      }
+      e.preventDefault();
+    }
+  }, true);
+
   // 供面板构建时取到「当前显示的这条」：用 data 属性和 noteText 反查
   function findNoteByKey(lang, gi, from, to){
     for(var k=0;k<NOTES.length;k++){
