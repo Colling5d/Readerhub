@@ -7,7 +7,7 @@ import json, os, re, sys
 import slots
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-BOOK_DIR = __BOOK_DIR__
+BOOK_DIR = '/Users/zhulv/ReaderHub/books/opera-society-politics'
 os.makedirs(BOOK_DIR, exist_ok=True)
 
 EN_DATA = os.path.join(HERE, 'en_data.json')
@@ -88,10 +88,10 @@ def build_sent_align(en_arr, align_sources):
 
 def slot_replace(html):
     import re
-    html = re.sub(r"<title>[^<]*</title>", "<title>__TITLE__ — 中英对照在线阅读</title>", html, count=1)
-    html = re.sub(r'<h1>[^<]*__BASE_TITLE__[^<]*</h1>', '<h1>__TITLE__</h1>', html, count=1)
-    html = re.sub(r'<p>中英对照版 · Bilingual Edition\s*<br>\s*__BASE_AUTHOR__</p>',
-                  '<p>中英对照版 · Bilingual Edition<br>__AUTHOR_ATTR__</p>', html, count=1, flags=re.S)
+    html = re.sub(r"<title>[^<]*</title>", "<title>Opera, Society, and Politics in Modern China — 中英对照在线阅读</title>", html, count=1)
+    html = re.sub(r'<h1>[^<]*Chinese and Americans: A Shared History[^<]*</h1>', '<h1>Opera, Society, and Politics in Modern China</h1>', html, count=1)
+    html = re.sub(r'<p>中英对照版 · Bilingual Edition\s*<br>\s*Xu\ Guoqi\ ·\ 徐国琦</p>',
+                  '<p>中英对照版 · Bilingual Edition<br>Hsiao-t’i Li · 李孝悌</p>', html, count=1, flags=re.S)
     en_start = html.index('const EN = /*__EN__*/')
     zh_start = html.index('const ZH = /*__ZH__*/')
     boom = html.index('[', zh_start); depth = 0; p = boom
@@ -106,8 +106,8 @@ def slot_replace(html):
     zh_end = p + 1
     html = html[:en_start] + '__ENZH_DATA__' + html[zh_end:]
     html = re.sub(r"var SENT_ALIGN=\{.*?\};", "var SENT_ALIGN=__SENT_ALIGN__;", html, count=1, flags=re.S)
-    html = re.sub(r"var POS_KEY = 'readerhub_pos_[^']*'", "var POS_KEY = '__POSKEY__'", html, count=1)
-    html = re.sub(r"var BOOK_KEY = 'readerhub_notes_[^']*'", "var BOOK_KEY = '__BOOKKEY__'", html, count=1)
+    html = re.sub(r"var POS_KEY = 'readerhub_pos_[^']*'", "var POS_KEY = 'readerhub_pos_opera-society-politics'", html, count=1)
+    html = re.sub(r"var BOOK_KEY = 'readerhub_notes_[^']*'", "var BOOK_KEY = 'readerhub_notes_opera-society-politics'", html, count=1)
     html = html.replace(": 'introduction';", ": 'intro';")
     # 启动默认章节：改为本书 TOC 的第一章（基书写死了 'intro'，本书可能没有该章）
     _first = json.dumps(slots.TOC_ORDER[0] if slots.TOC_ORDER else 'intro')

@@ -151,7 +151,7 @@ d=fitz.open(src); n=d.page_count; s=1; k=1
 while s<=n:
     e=min(s+199,n); doc=fitz.open(src); new=fitz.open()
     new.insert_pdf(doc,from_page=s-1,to_page=e-1)
-    fp=f"{out}/part{k}_p{s}-{e}.pdf"; new.save(fp); new.close(); doc.close()
+    fp=out+"/part"+str(k)+"_p"+str(s)+"-"+str(e)+".pdf"; new.save(fp); new.close(); doc.close()
     print(fp, round(os.path.getsize(fp)/1e6,2), "MB"); s=e+1; k+=1
 print("TOTAL", n)
 PY''')

@@ -1,0 +1,35 @@
+{
+  "id": "opera-society-politics",
+  "pdf": "/Users/zhulv/Library/Containers/com.tencent.xinWeChat/Data/Documents/xwechat_files/wxid_whu31mr9dp2f22_2ad6/msg/file/2026-10/1.pdf",
+  "title": "Opera, Society, and Politics in Modern China",
+  "author_en": "Hsiao-t’i Li",
+  "author_cn": "李孝悌",
+  "subtitle": "近代中国的戏曲、社会与政治",
+  "description": "李孝悌《Opera, Society, and Politics in Modern China》中英对照阅读本。从晚清帝国的戏曲生态，到清末民初上海、西安的戏曲改良，再到 1920–30 年代戏曲的政治化与激进化，勾勒近代中国戏曲与国家、社会互动的完整脉络。",
+  "tags": ["近代中国", "戏曲", "文化史", "上海", "西安", "政治史"],
+  "base_book": "chinese-americans-shared-history",
+  "sections": [
+    {"id": "ack",      "title": "Acknowledgments", "start": 6, "end": 7,  "type": "", "labels": ["Acknowledgments", "致谢"]},
+    {"id": "overture", "title": "Overture", "start": 8,  "end": 18, "type": "", "labels": ["Overture", "序曲"]},
+    {"id": "ch1", "title": "Chapter 1 · Looking Back at Opera in Late Imperial China", "start": 19,  "end": 60,  "type": "", "labels": ["Ch.1 · Looking Back at Opera in Late Imperial China", "第一章 · 回望帝制晚期的戏曲"]},
+    {"id": "ch2", "title": "Chapter 2 · Changing Discourses on China's Drama", "start": 61,  "end": 90,  "type": "", "labels": ["Ch.2 · Changing Discourses on China's Drama", "第二章 · 中国戏剧话语的变迁"]},
+    {"id": "ch3", "title": "Chapter 3 · The Reformation of Beijing Opera in Shanghai", "start": 91,  "end": 132, "type": "", "labels": ["Ch.3 · The Reformation of Beijing Opera in Shanghai", "第三章 · 上海京剧的改良"]},
+    {"id": "ch4", "title": "Chapter 4 · Reformed Opera on the Shanghai Stage", "start": 133, "end": 181, "type": "", "labels": ["Ch.4 · Reformed Opera on the Shanghai Stage", "第四章 · 上海舞台上的改良戏曲"]},
+    {"id": "ch5", "title": "Chapter 5 · Reformed Opera in Xi'an", "start": 182, "end": 226, "type": "", "labels": ["Ch.5 · Reformed Opera in Xi'an", "第五章 · 西安的改良戏曲"]},
+    {"id": "ch6", "title": "Chapter 6 · Politicization and Radicalization", "start": 227, "end": 260, "type": "", "labels": ["Ch.6 · Politicization and Radicalization", "第六章 · 政治化与激进化"]},
+    {"id": "finale", "title": "Finale", "start": 261, "end": 273, "type": "", "labels": ["Finale", "终曲"]},
+    {"id": "notes", "title": "Notes", "start": 274, "end": 309, "type": "notes", "labels": ["Notes", "注释"]}
+  ],
+  "notes_subheads": ["Notes", "Overture", "Chapter 1", "Chapter 2", "Chapter 3", "Chapter 4", "Chapter 5", "Chapter 6", "Finale"],
+  "meta": {
+    "featured": false,
+    "lang": "en",
+    "chapterCount": 9,
+    "publisher": "Harvard University Asia Center",
+    "publisherEn": "Harvard University Asia Center",
+    "publishYear": "2019",
+    "titleZh": "近代中国的戏曲、社会与政治",
+    "authorZh": "李孝悌",
+    "authorEn": "Hsiao-t’i Li"
+  }
+}
