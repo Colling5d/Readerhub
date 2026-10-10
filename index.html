@@ -23,6 +23,13 @@
   .tag{background:#f1ece2;border:1px solid var(--line);border-radius:999px;padding:2px 9px;font-size:11px}
   .tag.lang{background:#8a4422;border-color:#8a4422;color:#fff}
   .empty{color:var(--mute);text-align:center;padding:60px 0;font-size:15px}
+  /* 资料/文档分区：与书籍卡片区分（左侧强调条 + 「资料」徽标） */
+  #doc-grid{margin-top:4px}
+  .doc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:18px;align-items:stretch}
+  .card.doc{border-left:4px solid var(--accent,#8a4422);background:linear-gradient(180deg,var(--panel,#fff),color-mix(in srgb,var(--accent,#8a4422) 5%,var(--panel,#fff)))}
+  .tag.kinddoc{background:var(--accent,#8a4422);border-color:var(--accent,#8a4422);color:#fff;font-weight:600;letter-spacing:.5px}
+  .sec-head{font-size:15px;font-weight:600;color:var(--accent,#8a4422);margin:26px 2px 12px;letter-spacing:.5px;display:flex;align-items:center;gap:8px}
+  .sec-head::before{content:'';flex:0 0 auto;width:4px;height:16px;border-radius:2px;background:var(--accent,#8a4422)}
   footer{text-align:center;color:var(--mute);font-size:12px;padding:20px}
 
 
@@ -387,13 +394,15 @@
 <body>
 <header>
   <h1>ReaderHub · 在线阅读馆</h1>
-  <p>中英对照电子书库 —— 句子级跨语言对应高亮、笔记标注与全文检索，每本书一个独立页面。</p>
+  <p>中外对照电子书库与资料馆 —— 句子级跨语言对应高亮、笔记标注与全文检索，每本书 / 每份资料一个独立页面。</p>
 </header>
 <div class="wrap">
 
-
   <div class="count" id="count"></div>
   <div id="grid"></div>
+
+  <div class="count" id="doc-count" style="display:none"></div>
+  <div id="doc-grid" class="doc-grid"></div>
 </div>
 
   <section class="donate" id="donate">
@@ -469,7 +478,9 @@ var BOOKS = [
     "chapterCount": 13,
     "updated": "2024-10-04"
   },
-{"featured": false, "lang": "en", "chapterCount": 9, "publisher": "Harvard University Asia Center", "publisherEn": "Harvard University Asia Center", "publishYear": "2019", "titleZh": "近代中国的戏曲、社会与政治", "authorZh": "李孝悌", "authorEn": "Hsiao-t’i Li", "id": "opera-society-politics", "title": "Opera, Society, and Politics in Modern China", "author": "李孝悌 Hsiao-t’i Li", "subtitle": "近代中国的戏曲、社会与政治", "description": "李孝悌《Opera, Society, and Politics in Modern China》中英对照阅读本。从晚清帝国的戏曲生态，到清末民初上海、西安的戏曲改良，再到 1920–30 年代戏曲的政治化与激进化，勾勒近代中国戏曲与国家、社会互动的完整脉络。", "updated": "2026-10-09"}
+{"featured": false, "lang": "en", "chapterCount": 9, "publisher": "Harvard University Asia Center", "publisherEn": "Harvard University Asia Center", "publishYear": "2019", "titleZh": "近代中国的戏曲、社会与政治", "authorZh": "李孝悌", "authorEn": "Hsiao-t’i Li", "id": "opera-society-politics", "title": "Opera, Society, and Politics in Modern China", "author": "李孝悌 Hsiao-t’i Li", "subtitle": "近代中国的戏曲、社会与政治", "description": "李孝悌《Opera, Society, and Politics in Modern China》中英对照阅读本。从晚清帝国的戏曲生态，到清末民初上海、西安的戏曲改良，再到 1920–30 年代戏曲的政治化与激进化，勾勒近代中国戏曲与国家、社会互动的完整脉络。", "updated": "2026-10-09"},
+{"kind": "document", "docType": "lecture", "featured": true, "lang": "ru-zh", "chapterCount": 7, "id": "samoylov-russia-china-lecture", "title": "俄罗斯与中国：文明的对话 · 第一讲", "titleRu": "РОССИЯ И КИТАЙ: ДИАЛОГ КУЛЬТУР · ЛЕКЦИЯ 1", "author": "尼·阿·萨莫伊洛夫 N. A. Samoylov", "authorZh": "尼·阿·萨莫伊洛夫", "authorRu": "Н.А. Самойлов", "subtitle": "Н.А. Самойлов · Лекция 1（俄汉对照）", "description": "萨莫伊洛夫《俄罗斯与中国：文明的对话 · 第一讲》俄汉对照阅读本。从彼得一世创办科学院与珍宝馆、恰克图陆路茶叶贸易，到北京东正教传教团、俄国版「中国风」（шинуазри）在奥拉宁鲍姆中国宫与皇村中国村建筑中的体现，再叙茶叶品类、佩尔洛夫「茶王」世家与中俄「主题年」文化交流机制。全文俄汉对照，逐句双语呈现并附句子级跨语言对齐。", "tags": ["俄罗斯", "中国", "文化交流", "汉学", "茶叶贸易", "中国风"], "updated": "2026-10-10"}
+  
   
   /* __BOOKS__ */
 ];
@@ -485,24 +496,45 @@ function langLabel(lang){
 }
 
 var grid = document.getElementById('grid');
+// 区分「书籍」与「资料/文档」：kind==='document' 或 id 命中内置文档清单 走资料区
+var DOC_IDS = {'samoylov-russia-china-lecture':1};
+function isDoc(b){ return b.kind === 'document' || b.docType || DOC_IDS[b.id]; }
+function cardHTML(b, doc){
+  var lang = langLabel(b.lang);
+  var kindBadge = doc ? '<span class="tag kinddoc">资料</span>' : '';
+  var langBadge = lang ? '<span class="tag lang">'+esc(lang)+'</span>' : '';
+  var tags = (b.tags||[]).map(function(t){return '<span class="tag">'+esc(t)+'</span>'}).join('');
+  var meta = (kindBadge + langBadge + tags);
+  var base = doc ? 'docs/' : 'books/';
+  return '<a class="card'+(doc?' doc':'')+'" href="'+base+encodeURIComponent(b.id)+'/index.html">'+
+    '<h2>'+esc(b.title)+'</h2>'+
+    (b.author?'<div class="author">'+esc(b.author)+'</div>':'')+
+    (b.description?'<p class="desc">'+esc(b.description)+'</p>':'')+
+    (meta?'<div class="meta">'+meta+'</div>':'')+'</a>';
+}
 if(!BOOKS || !BOOKS.length){
   grid.innerHTML = '<div class="empty">书库为空。<br>把阅读器放进 <b>books/&lt;book-id&gt;/index.html</b> 并添加 metadata.json 即可显示。</div>';
 }else{
-  // optional featured ordering
   BOOKS.sort(function(a,b){return (b.featured?1:0)-(a.featured?1:0)});
-  grid.innerHTML = BOOKS.map(function(b){
-    var lang = langLabel(b.lang);
-    var langBadge = lang ? '<span class="tag lang">'+esc(lang)+'</span>' : '';
-    var tags = (b.tags||[]).map(function(t){return '<span class="tag">'+esc(t)+'</span>'}).join('');
-    var meta = (langBadge + tags);
-    return '<a class="card" href="books/'+encodeURIComponent(b.id)+'/index.html">'+
-      '<h2>'+esc(b.title)+'</h2>'+
-      (b.author?'<div class="author">'+esc(b.author)+'</div>':'')+
-      (b.description?'<p class="desc">'+esc(b.description)+'</p>':'')+
-      (meta?'<div class="meta">'+meta+'</div>':'')+'</a>';
-  }).join('');
+  var books = BOOKS.filter(function(b){return !isDoc(b)});
+  var docs  = BOOKS.filter(isDoc);
+
+  grid.innerHTML = books.map(function(b){return cardHTML(b,false)}).join('');
+  if(!books.length) grid.style.display='none'; else grid.style.display='';
+
+  var docGrid = document.getElementById('doc-grid');
+  var docCount = document.getElementById('doc-count');
+  function secHead(t){ return '<div class="sec-head">'+t+'</div>'; }
+  if(docs.length){
+    docCount.style.display = '';
+    docCount.innerHTML = secHead('📄 资料 / 文档');
+    docGrid.innerHTML = docs.map(function(b){return cardHTML(b,true)}).join('');
+  }else{
+    docCount.style.display='none'; docGrid.innerHTML='';
+  }
+  document.getElementById('count').textContent = '共 ' + books.length + ' 本' + (docs.length? ' · 资料 ' + docs.length + ' 份' : '');
 }
-document.getElementById('count').textContent = '共 ' + BOOKS.length + ' 本';
+document.getElementById('count').textContent = document.getElementById('count').textContent || ('共 ' + BOOKS.length + ' 本');
 document.getElementById('githubLink').href = 'https://github.com/Colling5d/Readerhub';
 </script>
   <button class="home-settings-btn" id="home-settings-btn" title="切换主题与字体" aria-label="切换主题与字体">&#9881; 主题</button>
