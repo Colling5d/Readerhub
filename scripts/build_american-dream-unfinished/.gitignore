@@ -1,0 +1,12 @@
+# Build workspace - intermediate/derived data (do not commit)
+work/
+pdf/
+zip/
+unzip/
+*.log
+*.pdf
+stream_raw.json
+en_data.json
+reader_base.html
+poll_all.py
+appendix_items.json

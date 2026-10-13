@@ -47,6 +47,7 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
 
   /* ---------- 1) 解析 notes 章节 -> 章节脚注映射 ---------- */
   var FN = {};   // FN[secId] = { en:{num:text}, zh:{num:text} }
+  var FNG = {en:{}, zh:{}};  // 全局脚注池（无独立 notes 章节时备援；同一编号以首次出现为准）
 
   function normTitle(t){
     return String(t||'').toLowerCase()
@@ -119,7 +120,8 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
       var t = p.text||''; var m;
       var r1=/<sup[^>]*data-fn=["']?(\d{1,3})/g; while((m=r1.exec(t))) nums[+m[1]]=1;
       var r1b=/<sup[^>]*>(\d{1,3})<\/sup>/g; while((m=r1b.exec(t))) nums[+m[1]]=1;
-      var r2=/\^\{(\[?\d{1,3}\]?)\}/g; while((m=r2.exec(t))) nums[+m[1].replace(/[\[\]]/g,'')]=1;
+      var r2=/\^\{\s*(\[?\d{1,3}\]?)\s*\}/g; while((m=r2.exec(t))) nums[+m[1].replace(/[\[\]]/g,'')]=1;
+      var r2b=/\$\s*(?:\{\s*\})?\s*\{\s*(\[?\d{1,3}\]?)\s*\}\s*\$/g; while((m=r2b.exec(t))) nums[+m[1].replace(/[\[\]]/g,'')]=1;
       var r3=/[.\u201d\u2019;,\)]\s*(\d{1,3})(?=\s|$)/g; while((m=r3.exec(t))) nums[+m[1]]=1;
       // 中文侧：中文标点/闭引号后紧跟数字（与 normalizeHTML 的规则 d 保持一致）
       var r4=/([。，、；：）】」』”’"])(\s*)(\d{1,3})/g;
@@ -189,13 +191,33 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
   ['en','zh'].forEach(function(lang){
     var ARR = (lang === 'en') ? EN : ((typeof ZH !== 'undefined') ? ZH : []);
     var nsec = noteSec(ARR);
-    if(!nsec) return;
-    var secs = footnoteSections(ARR);
-    var assigned = assignNotes(nsec, secs);
-    secs.forEach(function(sec, idx){
-      var sid = sec.id;
-      FN[sid] = FN[sid] || {en:{}, zh:{}};
-      FN[sid][lang] = assigned[idx] || {};
+    // 情形 A：有独立 notes 章节（把注收集到一处，按标题回填）
+    if(nsec){
+      var secs = footnoteSections(ARR);
+      var assigned = assignNotes(nsec, secs);
+      secs.forEach(function(sec, idx){
+        var sid = sec.id;
+        FN[sid] = FN[sid] || {en:{}, zh:{}};
+        FN[sid][lang] = assigned[idx] || {};
+      });
+      return;
+    }
+    // 情形 B：无独立 notes 章节——脚注以 note 型段落在各章节内部（本书：MinerU page_footnote）。
+    // 直接解析本节内的 note 段，构建 FN[sec][lang]。
+    ARR.forEach(function(sec){
+      var nums = {};
+      (sec.paras||[]).forEach(function(p){
+        if(p.type !== 'note') return;
+        extractNotes(p.text).forEach(function(x){
+          if(!x.n) return;
+          if(!(x.n in nums) && x.text) nums[x.n] = x.text;
+        });
+      });
+      FN[sec.id] = FN[sec.id] || {en:{}, zh:{}};
+      FN[sec.id][lang] = nums;
+      Object.keys(nums).forEach(function(n){
+        if(!(n in FNG[lang])) FNG[lang][n] = nums[n];
+      });
     });
   });
 
@@ -229,6 +251,9 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
     if(rec[lang] && rec[lang][n]) return {text: stripNum(rec[lang][n]), alt:false};
     var other = (lang === 'en') ? 'zh' : 'en';
     if(rec[other] && rec[other][n]) return {text: stripNum(rec[other][n]), alt:true};
+    // 全局池备援：脚注定义可能落在相邻章节（页码边界）。
+    if(FNG[lang] && FNG[lang][n]) return {text: stripNum(FNG[lang][n]), alt:true};
+    if(FNG[other] && FNG[other][n]) return {text: stripNum(FNG[other][n]), alt:true};
     return null;
   }
 
@@ -258,8 +283,9 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
     html = html.replace(/&lt;sup\b[^&]*?&gt;(\s*\d{1,3}\s*)&lt;\/sup&gt;/g, function(m, n){
       return markHTML(String(n).replace(/\s/g,''));
     });
-    // b2) $^{N}$ / ${}^{N}$（先处理，避免 $ 包壳被下面的 ^{N} 规则拆坏）
-    html = html.replace(/\$\s*\{?\s*\}\s*\^?\s*\{\s*(\[?\d{1,3}\]?)\s*\}\s*\$/g, function(m, n){
+    // b2) $^{N}$ / ${}^{N}$ / ${N}$（先处理，避免 $ 包壳被下面的 ^{N} 规则拆坏）
+    //     支持：$^{1}$、${}^{14}$、$^{ 2 }$、${3}$ 等 MinerU 数学式脚注标号
+    html = html.replace(/\$\s*(?:\{\s*\})?\s*\^?\s*\{\s*(\[?\d{1,3}\]?)\s*\}\s*\$/g, function(m, n){
       var v = String(n).replace(/[\[\]]/g,'');
       return v ? markHTML(v) : m;
     });

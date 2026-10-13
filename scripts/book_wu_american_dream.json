@@ -1,0 +1,40 @@
+{
+  "id": "american-dream-unfinished",
+  "pdf": "/Users/zhulv/Documents/2026年秋-中美关系史研究课程材料/2026中美关系专题（阅读书目）/吴翎君：《美国人未竟的中国梦：企业、技术与关系网》，新北市：联经出版事业股份有限公司，2020年版.pdf",
+  "title": "美國人未竟的中國夢：企業、技術與關係網",
+  "author_en": "Wu Lin-chun",
+  "author_cn": "吳翎君",
+  "subtitle": "企業、技術與關係網",
+  "description": "吳翎君《美國人未竟的中國夢：企業、技術與關係網》（聯經出版，2020）。以跨國企業與關係網為線索，考察十九世紀末至二戰後美國企業、技術與國家力量在中國的活動，涵蓋輪船招商局與旗昌洋行交易、清末民初中美版權之爭、江南造船所承造美輪、在華商人團體與工程師組織、抗戰時期在華跨國企業與石油戰略、戰後《中美商約》等課題。",
+  "tags": ["近代中国", "中美关系", "企业史", "技术史", "关系网", "外交史"],
+  "base_book": "chinese-americans-shared-history",
+  "sections": [
+    {"id": "intro", "title": "緒章", "start": 6, "end": 15, "type": "", "labels": ["緒章", "緒章"]},
+    {"id": "ch1", "title": "第一章 · 清末輪船招商局與美商旗昌洋行的交易", "start": 16, "end": 34, "type": "", "labels": ["Ch.1 · 輪船招商局與旗昌洋行", "第一章 · 輪船招商局與旗昌洋行"]},
+    {"id": "ch2", "title": "第二章 · 清末民初中美版權之爭", "start": 35, "end": 56, "type": "", "labels": ["Ch.2 · 中美版權之爭", "第二章 · 中美版權之爭"]},
+    {"id": "ch3", "title": "第三章 · 民初江南造船所成功打造美國萬噸巨輪", "start": 57, "end": 74, "type": "", "labels": ["Ch.3 · 江南造船所與美輪", "第三章 · 江南造船所與美輪"]},
+    {"id": "ch4", "title": "第四章 · 一種特殊機遇與多元關係網", "start": 75, "end": 94, "type": "", "labels": ["Ch.4 · 特殊機遇與關係網", "第四章 · 特殊機遇與關係網"]},
+    {"id": "ch5", "title": "第五章 · 在華商人團體的成立與轉型", "start": 95, "end": 124, "type": "", "labels": ["Ch.5 · 在華商人團體", "第五章 · 在華商人團體"]},
+    {"id": "ch6", "title": "第六章 · 在華技術組織的成立與演變", "start": 125, "end": 152, "type": "", "labels": ["Ch.6 · 在華技術組織", "第六章 · 在華技術組織"]},
+    {"id": "ch7", "title": "第七章 · 中國抗戰初期美國在華跨國企業的遭逢", "start": 153, "end": 171, "type": "", "labels": ["Ch.7 · 抗戰初期在華美企", "第七章 · 抗戰初期在華美企"]},
+    {"id": "ch8", "title": "第八章 · 戰爭與石油", "start": 172, "end": 192, "type": "", "labels": ["Ch.8 · 戰爭與石油", "第八章 · 戰爭與石油"]},
+    {"id": "ch9", "title": "第九章 · 戰後中美新經濟關係的建立", "start": 193, "end": 212, "type": "", "labels": ["Ch.9 · 戰後中美新經濟關係", "第九章 · 戰後中美新經濟關係"]},
+    {"id": "concl", "title": "結論", "start": 213, "end": 219, "type": "", "labels": ["結論", "結論"]},
+    {"id": "appendix", "title": "附錄", "start": 220, "end": 227, "type": "", "labels": ["附錄", "附錄"]},
+    {"id": "biblio", "title": "徵引書目", "start": 228, "end": 248, "type": "", "labels": ["徵引書目", "徵引書目"]},
+    {"id": "afterword", "title": "後記", "start": 249, "end": 253, "type": "", "labels": ["後記", "後記"]}
+  ],
+  "notes_subheads": [],
+  "meta": {
+    "featured": false,
+    "lang": "zh",
+    "chapterCount": 12,
+    "updated": "2026-10-13",
+    "publisher": "聯經出版事業股份有限公司",
+    "publisherEn": "Linking Publishing",
+    "publishYear": "2020",
+    "titleZh": "美國人未竟的中國夢：企業、技術與關係網",
+    "authorZh": "吳翎君",
+    "authorEn": "Wu Lin-chun"
+  }
+}
