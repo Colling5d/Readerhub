@@ -7,7 +7,7 @@ batch.json: {"data":{"batch_id":..., "file_urls":[url...]}}
 import json, os, sys, time, urllib.request, subprocess, re
 
 BASE = 'https://mineru.net/api/v4'
-TOK = 'sk-P5Y5CLmwX7gr6DHxq6hTF65u7GNOWym55EmFY0cfl6STJA9S'
+TOK = os.environ.get('MINERU_TOKEN', 'sk-P5Y5CLmwX7gr6DHxq6hTF65u7GNOWym55EmFY0cfl6STJA9S')
 HERE = os.path.dirname(os.path.abspath(__file__))
 ZIPDIR = os.path.join(HERE, 'zip'); os.makedirs(ZIPDIR, exist_ok=True)
 PDFDIR = os.path.join(HERE, 'pdf')

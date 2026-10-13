@@ -5,10 +5,11 @@
 产出 work/translated.json（按 'secid/i' 键，断点续跑）。
 """
 import json, os, re, time, threading, urllib.request, math, sys
+import os
 
-BASE = 'https://chat.ecnu.edu.cn/open/api/v1/chat/completions'
-KEY = 'sk-e1d6953fb6c348d193d8dd4a03c6edc7'
-MODEL = 'ecnu-max'
+BASE = os.environ.get('ECNU_API_BASE', 'https://chat.ecnu.edu.cn/open/api/v1/chat/completions')
+KEY = os.environ.get('ECNU_API_KEY', 'sk-e1d6953fb6c348d193d8dd4a03c6edc7')
+MODEL = os.environ.get('ECNU_API_MODEL', 'ecnu-max')
 HERE = os.path.dirname(os.path.abspath(__file__))
 WORK = os.path.join(HERE, 'work')
 os.makedirs(WORK, exist_ok=True)

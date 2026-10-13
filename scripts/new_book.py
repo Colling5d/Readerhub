@@ -44,7 +44,7 @@ BOOKS = os.path.join(ROOT, "books")
 HUB = os.path.join(ROOT, "index.html")
 
 MINERU_BASE = 'https://mineru.net/api/v4'
-MINERU_TOK = 'sk-P5Y5CLmwX7gr6DHxq6hTF65u7GNOWym55EmFY0cfl6STJA9S'
+MINERU_TOK = os.environ.get('MINERU_TOKEN', 'sk-P5Y5CLmwX7gr6DHxq6hTF65u7GNOWym55EmFY0cfl6STJA9S')
 
 def read(p):
     return open(p, encoding='utf-8').read()

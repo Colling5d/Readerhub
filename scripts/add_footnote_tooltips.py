@@ -60,9 +60,16 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
     var out = [];
     var s = String(t||'');
     var marks = [];
-    var r2 = /(?:^|[\s.。])(\d{1,3})\s*[.、]\s*/g, m2;
+    // 先识别行首「编号 + 分隔符」：支持 N. / N、 / N␣ / N《（数字后直接跟中文标点或汉字，如 “75《最新消息》”）
+    var head = /^\s*(\d{1,3})(?:[.、]\s*|\s+|(?=[《“「『（(【]))/.exec(s);
+    if(head){
+      marks.push({ n: parseInt(head[1],10), at: 0, end: head[0].length });
+    }
+    // 行内其它「编号 + .、」形式（部分旧书把多条注拼在同一段）
+    var r2 = /[\s.。](\d{1,3})\s*[.、]\s*/g, m2;
     while((m2 = r2.exec(s))){
       var lead = m2[0].length - m2[0].replace(/^[\s.。]/,'').length;
+      if(m2.index + lead <= (marks[0] ? marks[0].end : 0)) continue;  // 避开行首已收的编号
       marks.push({ n: parseInt(m2[1],10), at: m2.index + lead, end: r2.lastIndex });
     }
     for(var i=0;i<marks.length;i++){
@@ -73,11 +80,27 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
     return out;
   }
   function stripNum(t){
-    return String(t || '').replace(/^\s*\d{1,3}[.、\s]\s*/, '').trim();
+    return String(t || '').replace(/^\s*\d{1,3}(?:[.、]\s*|\s+|(?=[《“「『（(【]))/, '').trim();
+  }
+  // 纯文本内嵌脚注号：句末标点/引号后紧跟数字，后接空格或行尾（如 identity.49 / city.”50）
+  var PLAIN_REF = /[.\u201d\u2019;,\)]\s*\d{1,3}(?=\s|$)/;
+  // 中文侧：中文标点/闭引号后紧跟数字（20世纪/1930年代 等时间量词除外）
+  var PLAIN_REF_ZH = /[。，、；：）】」』”’"]\s*\d{1,3}/;
+  function hasPlainRef(t){
+    t = String(t||'');
+    if(PLAIN_REF.test(t)) return true;
+    var r = new RegExp(PLAIN_REF_ZH.source, 'g'), m;
+    while((m = r.exec(t))){
+      var rest = t.slice(m.index + m[0].length);
+      if(/^[A-Za-z%.]/.test(rest)) continue;
+      if(/^\s*(?:世纪|年代|年|月|日|时|分|秒|岁|人|个|种|次|万|千|百|元|位|届|—|–|-|\d)/.test(rest)) continue;
+      return true;
+    }
+    return false;
   }
   function hasSup(t){
     t = t || '';
-    return /<sup\b/i.test(t) || /\\\^\{|\\\^\{|\\\^\\\{/.test(t) || /\^\{/.test(t);
+    return /<sup\b/i.test(t) || /\\\^\{|\\\^\{|\\\^\\\{/.test(t) || /\^\{/.test(t) || hasPlainRef(t);
   }
   function footnoteSections(ARR){
     return ARR.filter(function(s){
@@ -97,6 +120,15 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
       var r1=/<sup[^>]*data-fn=["']?(\d{1,3})/g; while((m=r1.exec(t))) nums[+m[1]]=1;
       var r1b=/<sup[^>]*>(\d{1,3})<\/sup>/g; while((m=r1b.exec(t))) nums[+m[1]]=1;
       var r2=/\^\{(\[?\d{1,3}\]?)\}/g; while((m=r2.exec(t))) nums[+m[1].replace(/[\[\]]/g,'')]=1;
+      var r3=/[.\u201d\u2019;,\)]\s*(\d{1,3})(?=\s|$)/g; while((m=r3.exec(t))) nums[+m[1]]=1;
+      // 中文侧：中文标点/闭引号后紧跟数字（与 normalizeHTML 的规则 d 保持一致）
+      var r4=/([。，、；：）】」』”’"])(\s*)(\d{1,3})/g;
+      while((m=r4.exec(t))){
+        var rest = t.slice(m.index + m[0].length);
+        if(/^[A-Za-z%.]/.test(rest)) continue;
+        if(/^\s*(?:世纪|年代|年|月|日|时|分|秒|岁|人|个|种|次|万|千|百|元|位|届|—|–|-|\d)/.test(rest)) continue;
+        nums[+m[3]]=1;
+      }
     });
     return nums;
   }
@@ -209,7 +241,14 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
      关键点：其 textContent 恰为 "14"，与用户阅读所见一致，偏移稳定。 */
   function markHTML(n){ return '<sup class="fnmark" data-fn="' + n + '">' + n + '</sup>'; }
 
-  function normalizeHTML(html){
+  function normalizeHTML(html, lang, sec){
+    // 仅当该节确实收录了编号 n 的注释时才标记（避免 figure 号/页码/量词的误标记）
+    function hasNote(n){
+      if(!sec) return true;
+      var rec = FN[sec];
+      if(!rec) return true;
+      return !!((rec.en && rec.en[n]) || (rec.zh && rec.zh[n]));
+    }
     // a) 真正的 <sup>（含已有 fnmark，保持不动）
     html = html.replace(/<sup\b([^>]*)>(\s*\d{1,3}\s*)<\/sup>/g, function(m, attrs, n){
       if(/data-fn=/.test(attrs)) return m;                 // 已标注
@@ -228,14 +267,46 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
     html = html.replace(/\^\{\s*(\[?\d{1,3}\]?)\s*\}/g, function(m, n){
       return markHTML(String(n).replace(/[\[\]]/g,''));
     });
+    // c) 纯文本内嵌脚注号（英文书：句末标点后紧跟数字，如 identity.49 / city.”50）
+    //    仅英文侧启用，避免误伤中文/年份。数字需后接空格或行尾，且不在空格/字母前。
+    if(lang === 'en'){
+      html = html.replace(/([.”’;,\)])(\s*)(\d{1,3})(?=\s|$)/g, function(m, p, sp, n, off, whole){
+        var before = whole.slice(Math.max(0, off - 10), off + 1);
+        // 排除缩写：no. 3 / etc. 12 / vol. 5 / fig. 2 …
+        if(/(?:^|\b)(?:no|fig|vol|ch|pp|p|ed|eds|rev|cf|ca|etc|al|et al|jr|sr|st|nd|rd|th)\.\s*$/i.test(before)) return m;
+        // 排除后接 '(' 的（期号如 “no.2 (Spring 2013)”）
+        if(/^\s*\(/.test(whole.slice(off + m.length))) return m;
+        // 仅当该节有对应注释时才标记（滤掉 “1.75 cun” 之类的误报）
+        if(!hasNote(n)) return m;
+        return p + sp + markHTML(n);
+      });
+    }
+    // d) 中文侧内嵌脚注号（本书：中文句末标点/引号后紧跟数字，如 “新时代。2 与照” / “问题。6” /
+    //    “回答。”1 丰子恺” / “。21与此同时”）。中文标点或闭引号前导 + 后接空格/CJK 标点/汉字/句尾
+    //    + 不跟量词/时间单位 + 该节确有该编号注释。
+    if(lang === 'zh'){
+      html = html.replace(/([。，、；：）】」』”’"])(\s*)(\d{1,3})/g, function(m, p, sp, n, off, whole){
+        var rest = whole.slice(off + m.length);
+        // 后接非停顿字符（拉丁字母/百分号等）则不算
+        if(/^[A-Za-z%.]/.test(rest)) return m;
+        // 排除时间/量词表达：20世纪 / 1930年代 / 1912—1949 / 5年 / 3个月 …
+        if(/^\s*(?:世纪|年代|年|月|日|时|分|秒|岁|人|个|种|次|万|千|百|元|位|届|—|–|-|\d)/.test(rest)) return m;
+        if(!hasNote(n)) return m;
+        return p + sp + markHTML(n);
+      });
+    }
     return html;
   }
 
-  function annotateEl(el){
+  // 非叙述性章节（参考文献/图表目录）：其中数字多为页码/卷号，不标注脚注
+  var NO_FN_SEC = { biblio:1, bibliography:1, refs:1, references:1, figs:1, figures:1 };
+  function annotateEl(el, lang){
     if(!el || !el.getAttribute) return;
     if(el.getAttribute('data-fn-done')) return;
+    var sec = el.getAttribute('data-sec') || '';
+    if(NO_FN_SEC[sec]){ el.setAttribute('data-fn-done','1'); return; }
     var html = el.innerHTML;
-    var out = normalizeHTML(html);
+    var out = normalizeHTML(html, lang, sec);
     if(out !== html) el.innerHTML = out;
     el.setAttribute('data-fn-done', '1');
   }
@@ -243,8 +314,9 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
     ['article-en','article-zh'].forEach(function(aid){
       var root = document.getElementById(aid);
       if(!root) return;
+      var lang = (aid === 'article-zh') ? 'zh' : 'en';
       var ps = root.querySelectorAll('[data-gi]');
-      for(var i=0;i<ps.length;i++) annotateEl(ps[i]);
+      for(var i=0;i<ps.length;i++) annotateEl(ps[i], lang);
     });
   }
   annotateAll();
