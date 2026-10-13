@@ -29,8 +29,14 @@ def build_arrays():
             t = trans.get(key)
             if p['type'] == 'table':
                 out_type = 'table'
-            elif p['type'] in ('h', 'subh'):
-                out_type = 'title'
+            elif p['type'] == 'h1':
+                out_type = 'h1'
+            elif p['type'] == 'h1sub':
+                out_type = 'h1sub'
+            elif p['type'] in ('h2', 'h', 'subh'):
+                out_type = 'h2'
+            elif p['type'] == 'cap':
+                out_type = 'cap'
             elif p['type'] == 'note':
                 out_type = 'note'
             else:
@@ -101,33 +107,112 @@ def replace_map(html, lead_anchor, tail_anchor, body):
 
 
 def mono_patch(html):
-    """單語化：隱藏 ZH 欄，讓主欄佔滿，並改欄頭文案；表格以圖片呈現。"""
+    """單語化（隐藏 ZH 栏）+ 中文专著排版层级美化。"""
     css = """
 /* ==== MONOLINGUAL (zh-only) ==== */
 .main{display:flex !important;flex-direction:column !important;overflow:hidden}
 .col.zh{display:none !important}
-.col.en{flex:1 1 auto;min-height:0;height:100%;overflow-y:auto;border-right:none !important;max-width:840px;width:100%;margin:0 auto;box-sizing:border-box}
+.col.en{flex:1 1 auto;min-height:0;height:100%;overflow-y:auto;border-right:none !important;max-width:840px;width:100%;margin:0 auto;box-sizing:border-box;padding:0 56px 140px}
 .col.en .col-head{display:none !important}
-.p.table{margin:1.2em 0;text-align:center}
+.p.table{margin:1.6em 0;text-align:center}
 .p.table img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:6px}
+
+/* ==== 排版层级（中文专著）==== */
+.col.en{font-size:17px;line-height:1.95;color:#1f1f1f;text-align:justify}
+.col.en .p.p{margin:0 0 1.1em;text-indent:2em}
+.col.en .p.p.h1,.col.en .p.p.h1sub,.col.en .p.p.h2,.col.en .p.p.cap{text-indent:0}
+
+/* 章标题（第X章 / 緒章 / 結論 …）*/
+.p.h1{
+  font-size:27px;font-weight:800;letter-spacing:.06em;text-align:center;
+  margin:2.6em 0 1.4em;color:var(--accent);text-indent:0;
+  line-height:1.5;
+}
+.p.h1::after{
+  content:"";display:block;width:56px;height:3px;border-radius:2px;
+  background:linear-gradient(90deg,var(--accent),transparent);margin:.7em auto 0;
+}
+/* 章副题 */
+.p.h1sub{
+  font-size:19px;font-weight:600;letter-spacing:.08em;text-align:center;
+  margin:-1em 0 1.8em;color:#5a5a5a;text-indent:0;line-height:1.6;
+}
+/* 节标题（一、 / （一） / 前言 …）*/
+.p.h2{
+  font-size:20px;font-weight:700;margin:2.2em 0 .9em;color:#2a2a2a;
+  text-align:left;text-indent:0;line-height:1.6;letter-spacing:.02em;
+  padding-left:14px;border-left:4px solid var(--accent);
+}
+/* 表格题注 */
+.p.cap{
+  font-size:15px;font-weight:600;color:var(--ink-soft,#8a8a8a);
+  text-align:center;text-indent:0;margin:2em 0 .6em;letter-spacing:.02em;
+}
+/* 脚注 */
+.note{font-size:13.5px;line-height:1.75;margin:0 0 .5em;color:#5a5a5a;text-indent:0}
+
+/* 首字下沉（每章正文第一段）*/
+.p.body-lead{text-indent:0}
+.p.body-lead::first-letter{
+  float:left;font-size:3.1em;line-height:.86;font-weight:800;
+  margin:.06em .12em 0 0;color:var(--accent);
+}
+
+@media (max-width:760px){
+  .col.en{padding:0 18px 120px;font-size:16px}
+  .p.h1{font-size:22px;margin:2em 0 1em}
+  .p.h2{font-size:18px}
+}
 """
-    html = html.replace('</style>', css + '</style>', 1)
-    # 讓 paraHTML 支援 table 型別（顯示表格圖片）
-    old = ("function paraHTML(p, lang){\n"
-           "  const t = p.text || '';\n"
-           "  const cls = p.type==='title' ? 'p title' : (p.type==='note' ? 'note' : 'p');\n"
-           "  return `<p class=\"${cls}\" data-lang=\"${lang}\">${t}</p>`;\n"
-           "}")
-    new = ("function paraHTML(p, lang){\n"
-           "  const t = p.text || '';\n"
-           "  if(p.type==='table'){ return `<figure class=\"p table\" data-lang=\"${lang}\"><img loading=\"lazy\" src=\"${t}\" alt=\"表格\"></figure>`; }\n"
-           "  const cls = p.type==='title' ? 'p title' : (p.type==='note' ? 'note' : 'p');\n"
-           "  return `<p class=\"${cls}\" data-lang=\"${lang}\">${t}</p>`;\n"
-           "}")
-    if old in html:
-        html = html.replace(old, new, 1)
+    if 'MONOLINGUAL (zh-only)' not in html:
+        html = html.replace('</style>', css + '</style>', 1)
+
+    # --- paraHTML：支持 h1/h1sub/h2/cap/table ---
+    old_ph = ("  const cls = p.type==='title' ? 'p title' : (p.type==='note' ? 'note' : 'p');\n"
+              "  return `<p class=\"${cls}\" data-lang=\"${lang}\">${t}</p>`;")
+    new_ph = ("  if(p.type==='table'){ return `<figure class=\"p table\" data-lang=\"${lang}\"><img loading=\"lazy\" src=\"${t}\" alt=\"表格\"></figure>`; }\n"
+              "  if(p.type==='h1'){ return `<p class=\"p h1\" data-lang=\"${lang}\">${t}</p>`; }\n"
+              "  if(p.type==='h1sub'){ return `<p class=\"p h1sub\" data-lang=\"${lang}\">${t}</p>`; }\n"
+              "  if(p.type==='h2'){ return `<p class=\"p h2\" data-lang=\"${lang}\">${t}</p>`; }\n"
+              "  if(p.type==='cap'){ return `<p class=\"p cap\" data-lang=\"${lang}\">${t}</p>`; }\n"
+              "  const cls = p.type==='note' ? 'note' : 'p';\n"
+              "  return `<p class=\"${cls}\" data-lang=\"${lang}\">${t}</p>`;")
+    if old_ph in html:
+        html = html.replace(old_ph, new_ph, 1)
     else:
         raise RuntimeError('paraHTML anchor not found')
+
+    # --- 连续滚动渲染 ---
+    old_en = ("      var enCls = p.type==='title' ? 'p title' : (p.type==='note' ? 'note' : 'p');\n"
+              "      var enHtml = '<p class=\"'+enCls+'\" data-lang=\"en\" data-sec=\"'+id+'\" data-i=\"'+i+'\" data-gi=\"'+myGi+'\">'+(p.text||'')+'</p>';")
+    new_en = ("      var enHtml;\n"
+              "      var base=' data-lang=\"en\" data-sec=\"'+id+'\" data-i=\"'+i+'\" data-gi=\"'+myGi+'\">';\n"
+              "      if(p.type==='table'){\n"
+              "        enHtml = '<figure class=\"p table\"'+base+'<img loading=\"lazy\" src=\"'+(p.text||'')+'\" alt=\"表格\"></figure>';\n"
+              "      } else if(p.type==='h1'){\n"
+              "        enHtml = '<p class=\"p h1\"'+base+(p.text||'')+'</p>';\n"
+              "      } else if(p.type==='h1sub'){\n"
+              "        enHtml = '<p class=\"p h1sub\"'+base+(p.text||'')+'</p>';\n"
+              "      } else if(p.type==='h2'){\n"
+              "        enHtml = '<p class=\"p h2\"'+base+(p.text||'')+'</p>';\n"
+              "      } else if(p.type==='cap'){\n"
+              "        enHtml = '<p class=\"p cap\"'+base+(p.text||'')+'</p>';\n"
+              "      } else {\n"
+              "        var enCls = p.type==='note' ? 'note' : 'p';\n"
+              "        enHtml = '<p class=\"'+enCls+'\"'+base+(p.text||'')+'</p>';\n"
+              "      }")
+    if old_en in html:
+        html = html.replace(old_en, new_en, 1)
+    else:
+        raise RuntimeError('continuous-scroll anchor not found')
+
+    # --- 每章正文首段首字下沉 ---
+    old_loop = "    sec.paras.forEach(function(p, i){\n      var myGi = gi++;"
+    new_loop = "    var _leadDone = false;\n    sec.paras.forEach(function(p, i){\n      var myGi = gi++;\n      var _isLead = false;\n      if(!_leadDone && p.type==='text'){ _isLead = true; _leadDone = true; }"
+    if old_loop in html:
+        html = html.replace(old_loop, new_loop, 1)
+    html = html.replace("        var enCls = p.type==='note' ? 'note' : 'p';\n        enHtml = '<p class=\"'+enCls+'\"'+base+(p.text||'')+'</p>';",
+                        "        var enCls = p.type==='note' ? 'note' : 'p';\n        if(_isLead && p.type==='text') enCls += ' body-lead';\n        enHtml = '<p class=\"'+enCls+'\"'+base+(p.text||'')+'</p>';", 1)
     return html
 
 

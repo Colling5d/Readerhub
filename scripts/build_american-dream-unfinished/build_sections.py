@@ -77,17 +77,25 @@ def main():
                     pending = t if pending is None else pending + ' ' + t
             flush()
         else:
-            ht = first_on_page(a)
-            if ht:
-                paras.append({"type": 'h', "text": ht})
             for x in items:
                 if x['page'] < a or x['page'] > b:
                     continue
                 t = norm(x['text']).strip()
                 if is_noise(t) or t == 'This page intentionally left blank':
                     continue
-                if t == ht:
-                    continue
+                lvl = x.get('lvl')
+                if re.match(r'^第[一二三四五六七八九十百]+章', t):
+                    paras.append({"type": 'h1', "text": t}); continue
+                if re.match(r'^(緒章|緒論|導論|結論|後記|附錄|徵引書目|參考文獻)', t) and len(t) <= 12:
+                    paras.append({"type": 'h1', "text": t}); continue
+                if re.match(r'^(前言|小結|結論|結語|導言|引言|餘論|後論)$', t):
+                    paras.append({"type": 'h2', "text": t}); continue
+                if lvl == 1:
+                    paras.append({"type": 'h1', "text": t}); continue
+                if lvl == 2:
+                    paras.append({"type": 'h2', "text": t}); continue
+                if len(t) <= 24 and re.match(r'^(?:[一二三四五六七八九十]+、|\([一二三四五六七八九十]+\)|\d+[\.、]\s*\S)', t):
+                    paras.append({"type": 'h2', "text": t}); continue
                 paras.append({"type": 'text', "text": t})
             # 页底脚注（MinerU page_footnote）：附加在本节正文之后，供悬浮提示使用
             for x in items:
@@ -103,7 +111,7 @@ def main():
             if sid == 'appendix':
                 for it in apdx:
                     if it.get('caption'):
-                        paras.append({"type": 'subh', "text": it['caption']})
+                        paras.append({"type": 'cap', "text": it['caption']})
                     if it.get('img'):
                         paras.append({"type": 'table', "text": it['img']})
         dedup = []
@@ -118,6 +126,13 @@ def main():
                 continue
             seen.add(k); uniq.append(p)
         dedup = uniq
+        # 章标题（第X章）后紧跟的短标题 → 作为章副题 h1sub
+        for i, p in enumerate(dedup):
+            if p['type'] == 'h1' and re.match(r'^第[一二三四五六七八九十百]+章', p['text']):
+                if i + 1 < len(dedup):
+                    q = dedup[i + 1]
+                    if q['type'] in ('h1', 'h2') and len(q['text']) <= 42 and not re.search(r'[。；!？]', q['text']):
+                        q['type'] = 'h1sub'
         results.append({"id": sid, "title": title, "paras": dedup})
         print(f"{sid:12s} paras={len(dedup):4d} chars={sum(len(p['text']) for p in dedup):7d} | {(dedup[0]['text'][:40] if dedup else '')}", flush=True)
     with open(os.path.join(HERE, 'en_data.json'), 'w', encoding='utf-8') as f:
