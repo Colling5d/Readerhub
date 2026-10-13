@@ -104,9 +104,9 @@ def mono_patch(html):
     """單語化：隱藏 ZH 欄，讓主欄佔滿，並改欄頭文案；表格以圖片呈現。"""
     css = """
 /* ==== MONOLINGUAL (zh-only) ==== */
-.main{display:block !important}
+.main{display:flex !important;flex-direction:column !important;overflow:hidden}
 .col.zh{display:none !important}
-.col.en{border-right:none !important;max-width:840px;margin:0 auto}
+.col.en{flex:1 1 auto;min-height:0;height:100%;overflow-y:auto;border-right:none !important;max-width:840px;width:100%;margin:0 auto;box-sizing:border-box}
 .col.en .col-head{display:none !important}
 .p.table{margin:1.2em 0;text-align:center}
 .p.table img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:6px}
