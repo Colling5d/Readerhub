@@ -44,6 +44,18 @@ CSS = '''
   .lang-toggle .lt-btn.on{background:var(--accent,#b99a5b);color:#fff}
   .lang-toggle .lt-sep{width:1px;height:14px;background:var(--line,#e6e1d6);opacity:.7}
 
+  /* 栏头右上角常驻的「隐藏 / 显示」小按钮（最容易发现的位置） */
+  .lt-head-btn{
+    float:right;margin:-1px 0 0 12px;padding:2px 11px;
+    border:1px solid var(--line,#e6e1d6);border-radius:999px;
+    background:var(--panel,#fbfaf7);color:var(--ink,#2b2b2b);
+    font-family:inherit;font-size:11px;line-height:1.7;
+    letter-spacing:0;text-transform:none;white-space:nowrap;cursor:pointer;
+    transition:background .15s ease,color .15s ease;
+  }
+  .lt-head-btn:hover{background:var(--accent,#b99a5b);color:#fff;border-color:transparent}
+  .lt-head-btn.on{background:var(--accent,#b99a5b);color:#fff;border-color:transparent}
+
   /* 隐藏某一栏：display:none 用 !important 压过 #enpane 之类的 id 选择器 */
   body.rh-hide-en #scroll-en,
   body.rh-hide-en .col.en,
@@ -130,6 +142,24 @@ JS = r'''
   var enLabel = guess(headText(enEls), true, '英文');
   var zhLabel = guess(headText(zhEls), true, '中文');
 
+  /* ---- 在每一栏的栏头（sticky 顶部）挂一个「隐藏」小按钮 ---- */
+  function headBtn(els, which){
+    if(!els.length) return null;
+    var head = els[0].querySelector('.col-head, .panehead, header');
+    if(!head) return null;
+    var b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'lt-head-btn';
+    b.textContent = '隐藏';
+    b.title = '隐藏这一栏（底部「' + (which === 'en' ? '隐藏' + enLabel : '隐藏' + zhLabel)
+            + '」按钮可再次显示）';
+    b.addEventListener('click', function(e){ e.stopPropagation(); toggle(which); });
+    head.appendChild(b);
+    return b;
+  }
+  var hEn = headBtn(enEls, 'en');
+  var hZh = headBtn(zhEls, 'zh');
+
   /* ---- 空栏（单语书）自动藏起对应按钮 ---- */
   function hasContent(els){
     for(var i=0;i<els.length;i++){
@@ -143,6 +173,8 @@ JS = r'''
     var cEn = hasContent(enEls), cZh = hasContent(zhEls);
     if(bEn) bEn.style.display = cEn ? '' : 'none';
     if(bZh) bZh.style.display = cZh ? '' : 'none';
+    if(hEn) hEn.style.display = cEn ? '' : 'none';
+    if(hZh) hZh.style.display = cZh ? '' : 'none';
     // 栏头标题未必靠谱（有的书把中文原文放在“英文栏”），按实际内容语言校正标签
     if(cEn && cjkRatio(bodyText(enEls)) > 0.15) enLabel = '原文';
     if(cZh && cjkRatio(bodyText(zhEls)) < 0.15) zhLabel = '译文';
@@ -174,6 +206,8 @@ JS = r'''
       bZh.textContent = (hideZh ? '显示' : '隐藏') + zhLabel;
       bZh.title = (hideZh ? '显示' : '隐藏') + '中文栏（快捷键 C）';
     }
+    if(hEn) hEn.textContent = hideEn ? '显示' : '隐藏';
+    if(hZh) hZh.textContent = hideZh ? '显示' : '隐藏';
     if(save){
       try{ localStorage.setItem(KEY, JSON.stringify({en: hideEn, zh: hideZh})); }catch(e){}
     }
@@ -230,10 +264,11 @@ def strip_old(html):
     if not had:
         return html, False
     html = re.sub(r'\n\s*/\* ===== 语言栏显示切换 \(LANG-TOGGLE\).*?</style>',
-                  '\n</style>', html, count=1, flags=re.S)
-    html = re.sub(r'<div class="lang-toggle".*?</div>\s*', '', html, count=1, flags=re.S)
-    html = re.sub(r'<script>/\* =+ 语言栏显示切换 \(LANG-TOGGLE\).*?</script>\n?',
-                  '', html, count=1, flags=re.S)
+                  '\n</style>', html, flags=re.S)
+    html = re.sub(r'<div class="lang-toggle".*?</div>\s*', '', html, flags=re.S)
+    # 注意：<script> 与注释之间有一个换行，须用 \s* 吸纳
+    html = re.sub(r'<script>\s*/\* =+ 语言栏显示切换 \(LANG-TOGGLE\)\s*=+ \*/.*?</script>\n?',
+                  '', html, flags=re.S)
     return html, True
 
 
