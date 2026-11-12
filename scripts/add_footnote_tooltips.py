@@ -265,6 +265,13 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
         <sup class="fnmark" data-fn="14">14</sup>
      关键点：其 textContent 恰为 "14"，与用户阅读所见一致，偏移稳定。 */
   function markHTML(n){ return '<sup class="fnmark" data-fn="' + n + '">' + n + '</sup>'; }
+  // 判断偏移 off 是否落在 HTML 标签（<...>）内部，避免把 data-fn="1" 里的数字当脚注号再包一层
+  function insideTag(whole, off){
+    var lt = whole.lastIndexOf('<', off);
+    if(lt < 0) return false;
+    var gt = whole.indexOf('>', lt);
+    return gt === -1 || off < gt;
+  }
 
   function normalizeHTML(html, lang, sec){
     // 仅当该节确实收录了编号 n 的注释时才标记（避免 figure 号/页码/量词的误标记）
@@ -297,6 +304,7 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
     //    仅英文侧启用，避免误伤中文/年份。数字需后接空格或行尾，且不在空格/字母前。
     if(lang === 'en'){
       html = html.replace(/([.”’;,\)])(\s*)(\d{1,3})(?=\s|$)/g, function(m, p, sp, n, off, whole){
+        if(insideTag(whole, off)) return m;
         var before = whole.slice(Math.max(0, off - 10), off + 1);
         // 排除缩写：no. 3 / etc. 12 / vol. 5 / fig. 2 …
         if(/(?:^|\b)(?:no|fig|vol|ch|pp|p|ed|eds|rev|cf|ca|etc|al|et al|jr|sr|st|nd|rd|th)\.\s*$/i.test(before)) return m;
@@ -312,6 +320,7 @@ JS = r'''/* ============ 脚注悬浮提示 (FOOTNOTE-TOOLTIP) ============ */
     //    + 不跟量词/时间单位 + 该节确有该编号注释。
     if(lang === 'zh'){
       html = html.replace(/([。，、；：）】」』”’"])(\s*)(\d{1,3})/g, function(m, p, sp, n, off, whole){
+        if(insideTag(whole, off)) return m;
         var rest = whole.slice(off + m.length);
         // 后接非停顿字符（拉丁字母/百分号等）则不算
         if(/^[A-Za-z%.]/.test(rest)) return m;

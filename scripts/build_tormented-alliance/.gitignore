@@ -1,0 +1,4 @@
+work/
+*.log
+book.pdf
+reader_base.html
