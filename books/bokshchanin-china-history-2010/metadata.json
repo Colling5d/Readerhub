@@ -1,0 +1,16 @@
+{
+  "id": "bokshchanin-china-history-2010",
+  "title": "中国史（古代、中世纪与近代）",
+  "subtitle": "俄汉对照",
+  "author": "鲍克夏宁、涅波姆宁、斯捷普金娜",
+  "description": "俄文据 MinerU 文本识别整理。中文译文由 ECNU 云端模型生成，按原页标注。",
+  "tags": [
+    "明史",
+    "俄语汉学",
+    "俄汉对照"
+  ],
+  "lang": "ru-zh",
+  "featured": false,
+  "chapterCount": 20,
+  "updated": "2026-11-21"
+}
