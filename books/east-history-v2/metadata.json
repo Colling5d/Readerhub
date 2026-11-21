@@ -1,0 +1,16 @@
+{
+  "id": "east-history-v2",
+  "title": "东方史·第2卷（中世纪的东方）",
+  "subtitle": "俄汉对照",
+  "author": "俄罗斯科学院东方研究所",
+  "description": "俄文据 MinerU 文本识别整理。中文译文由 ECNU 云端模型生成，按原页标注。",
+  "tags": [
+    "明史",
+    "俄语汉学",
+    "俄汉对照"
+  ],
+  "lang": "ru-zh",
+  "featured": false,
+  "chapterCount": 17,
+  "updated": "2026-11-21"
+}
