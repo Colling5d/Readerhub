@@ -3,7 +3,7 @@
   "title": "《明史》中的宦官传",
   "subtitle": "俄汉对照",
   "author": "皮斯佐夫",
-  "description": "俄文据 MinerU 文本识别整理。中文译文按原页标注，可在阅读器内对照查检。",
+  "description": "俄文据 MinerU 文本识别整理。中文译文由 ECNU 云端模型生成，按原页标注。",
   "tags": [
     "明史",
     "俄语汉学",
